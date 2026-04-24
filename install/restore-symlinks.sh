@@ -52,8 +52,10 @@ fi
 # Varsayılan: groups-hypr. fastfetch-theme.sh ile değiştirilebilir.
 FF_ACTIVE="$HOME/.config/fastfetch/config.jsonc"
 if [ ! -L "$FF_ACTIVE" ] || [ ! -e "$FF_ACTIVE" ]; then
-    PRESET="$DEST/fastfetch/presets/groups-hypr.jsonc"
-    [ -f "$PRESET" ] && ln -sfn "$PRESET" "$FF_ACTIVE" && log "fastfetch preset: groups-hypr"
+    # Relative symlink — ~/.config/fastfetch DEST/fastfetch'e bağlı olduğundan
+    # presets/groups-hypr.jsonc aynı dizinde
+    [ -f "$DEST/fastfetch/presets/groups-hypr.jsonc" ] && \
+        ln -sfn "presets/groups-hypr.jsonc" "$FF_ACTIVE" && log "fastfetch preset: groups-hypr"
 fi
 
 # ── Shell init ─────────────────────────────────────────
