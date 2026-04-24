@@ -1,0 +1,62 @@
+# ~/.zshrc — symlink to ~/Claude/dotfiles/zsh/zshrc
+
+# ── oh-my-zsh ────────────────────────────────────────────
+export ZSH="$HOME/.oh-my-zsh"
+
+# Theme: Powerlevel10k. Config: ~/.p10k.zsh
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# OMZ built-in plugins
+plugins=(
+    git
+    sudo                  # Esc-Esc: komutun önüne sudo ekler
+    extract               # `x <archive>` otomatik çıkarır
+    colored-man-pages
+    command-not-found     # bilinmeyen komut → pacman paketi önerir
+)
+
+source "$ZSH/oh-my-zsh.sh"
+
+# ── External plugins (Arch pacman'den) ───────────────────
+# Fish-like inline history suggestions — gri yazıyla tamamlama
+[[ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
+    source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# Renkli komut syntax'ı (geçerli/geçersiz komutları anında boyar)
+# MUTLAKA en son source edilmeli — diğer plugin'lerin hook'larını yakalamak için
+[[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+    source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# Ek completions paketinin fpath'e dahil edilmesi
+[[ -d /usr/share/zsh/site-functions ]] && fpath=(/usr/share/zsh/site-functions $fpath)
+
+# ── PATH ─────────────────────────────────────────────────
+export PATH="$HOME/.local/bin:$PATH"
+
+# ── Aliases ──────────────────────────────────────────────
+alias ls='ls --color=auto --group-directories-first'
+alias la='ls -la --color=auto --group-directories-first'
+alias ll='ls -l  --color=auto --group-directories-first'
+alias grep='grep --color=auto'
+
+# AI agent'ler — claude (~/.local/bin) ve opencode (/usr/bin) PATH'te
+# fftheme: fastfetch preset switcher (arch/hypr/minimal/groups/...)
+alias fftheme='bash $HOME/Claude/scripts/fastfetch-theme.sh'
+
+# ── History ──────────────────────────────────────────────
+HISTSIZE=50000
+SAVEHIST=50000
+HISTFILE="$HOME/.zsh_history"
+setopt SHARE_HISTORY           # terminaller arası paylaş
+setopt HIST_IGNORE_ALL_DUPS    # duplike komutları atla
+setopt HIST_IGNORE_SPACE       # başı boşluklu komutları kaydetme
+setopt HIST_REDUCE_BLANKS
+
+# ── Powerlevel10k config ─────────────────────────────────
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+
+# ── fastfetch on interactive top-level kitty session ─────
+# $SHLVL == 1 → ilk seviye shell; subshell'de tekrarlamasın.
+if [[ "$SHLVL" == "1" ]] && command -v fastfetch >/dev/null 2>&1; then
+    fastfetch
+fi

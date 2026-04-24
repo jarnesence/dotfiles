@@ -1,0 +1,13 @@
+# matugen config — sadece tek bir dosya üretir: palette.sh
+#
+# palette.sh tüm sistemin "source of truth" rengi. Uygulama-özel formatlar
+# (hyprland, waybar, kitty, mako ...) generate-themes.sh ile bundan üretilir.
+#
+# Yeni bir uygulama eklemek istersen: matugen'a dokunma, generate-themes.sh'a
+# yeni bir blok ekle.
+
+[config]
+
+[templates.palette]
+input_path  = "/home/x/Claude/dotfiles/matugen/templates/palette.sh"
+output_path = "/home/x/.config/palette/palette.sh"

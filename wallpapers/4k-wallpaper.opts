@@ -1,0 +1,4 @@
+# Per-video mpv options for 4k-wallpaper.mp4
+# 1.05x zoom with top alignment crops the small banner at the bottom edge.
+video-zoom=0.0704
+video-align-y=-1

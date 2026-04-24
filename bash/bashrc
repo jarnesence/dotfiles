@@ -1,0 +1,25 @@
+#
+# ~/.bashrc — managed symlink to ~/Claude/dotfiles/bash/bashrc
+#
+
+# Interactive-only gate: non-interactive shell'ler (Claude Code subshell'leri,
+# script'ler, pipe'lar) bu noktadan dönüp fastfetch vb. çalıştırmaz.
+[[ $- != *i* ]] && return
+
+# ── Aliases ─────────────────────────────────────────────
+alias ls='ls --color=auto --group-directories-first'
+alias la='ls -la --color=auto --group-directories-first'
+alias ll='ls -l  --color=auto --group-directories-first'
+alias grep='grep --color=auto'
+
+# ── PATH ────────────────────────────────────────────────
+export PATH="$HOME/.local/bin:$PATH"
+
+# ── Prompt ──────────────────────────────────────────────
+PS1='[\u@\h \W]\$ '
+
+# ── Interactive top-level kitty oturumunda fastfetch göster ─
+# $SHLVL == 1 → ilk seviye shell. Subshell'de tekrar çalışmasın.
+if [[ "$SHLVL" == "1" ]] && command -v fastfetch >/dev/null 2>&1; then
+    fastfetch
+fi

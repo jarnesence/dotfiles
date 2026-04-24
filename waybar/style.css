@@ -1,0 +1,76 @@
+/* waybar — borderless, flat, Cascadia Code, palette-driven.
+ * Sol: tray · Orta: 5 kare workspace dot · Sağ: mpris → [battery] → clock
+ * Clock ve mpris aynı font-size + renk (sırıtmasın).
+ */
+
+@import url("colors.css");
+
+* {
+    font-family: "Cascadia Code NF", monospace;
+    font-size:   12px;
+    font-weight: 500;
+    min-height:  0;
+    padding:     0;
+    margin:      0;
+    border:      none;
+    border-radius: 0;
+    transition: background-color 150ms ease, color 150ms ease;
+}
+
+window#waybar {
+    background: alpha(@surface, 0.55);
+    color:      @on-surface;
+}
+
+.modules-left    { padding: 0 4px 0 14px; }
+.modules-center  { padding: 0 4px; }
+.modules-right   { padding: 0 14px 0 4px; }
+
+/* ── Tray (sol) ── */
+#tray { padding: 0 10px; }
+#tray > .passive         { -gtk-icon-effect: dim; }
+#tray > .needs-attention { -gtk-icon-effect: highlight; color: @error; }
+
+/* ── Workspaces (orta) — 5 kare ── */
+#workspaces { padding: 0 6px; }
+#workspaces button {
+    font-size:   14px;
+    font-weight: 400;
+    padding:     0 7px;
+    margin:      0;
+    background:  transparent;
+    color:       alpha(@on-surface, 0.35);
+    border:      none;
+    box-shadow:  none;
+}
+#workspaces button label { font-size: 14px; }
+#workspaces button.active { color: @primary; }
+#workspaces button.urgent { color: @error; }
+#workspaces button:hover  { color: @on-surface; background: transparent; }
+
+/* ── MPRIS + Clock aynı tipografi (sırıtmasın) ── */
+#mpris, #clock {
+    font-size:      13px;
+    font-weight:    500;
+    letter-spacing: 0.5px;
+    color:          alpha(@on-surface, 0.85);
+    padding:        0 12px;
+    font-feature-settings: "tnum";
+}
+#mpris {
+    font-style: italic;                      /* medya italic */
+    color:      alpha(@on-surface, 0.70);    /* bir tık daha şeffaf */
+}
+#mpris.paused  { color: alpha(@on-surface, 0.45); }
+#mpris.stopped { color: transparent; padding: 0; }
+
+/* ── Battery — büyük, yatay MDI icon, net ── */
+#battery {
+    padding:   0 12px;
+    font-size: 15px;              /* ikon yüksek çözünürlüklü render için büyük */
+    color:     alpha(@on-surface, 0.85);
+    font-feature-settings: "tnum";
+}
+#battery.charging { color: @tertiary; }
+#battery.warning  { color: @secondary; }
+#battery.critical { color: @error; }

@@ -1,0 +1,103 @@
+// waybar — sol saat / orta 5-kare workspace dots / sağ mpris+modüller.
+// __MODULES_RIGHT__ = host-setup.sh tarafından doldurulur (desktop vs laptop).
+
+{
+    "layer": "top",
+    "position": "top",
+    "height": 32,
+    "spacing": 0,
+    "margin-top": 10,
+    "margin-left": 10,
+    "margin-right": 10,
+    "margin-bottom": 0,
+
+    "modules-left":   ["tray"],
+    "modules-center": ["hyprland/workspaces"],
+    "modules-right":  __MODULES_RIGHT__,
+
+    "hyprland/workspaces": {
+        "format":      "{icon}",
+        "format-icons": {
+            "active":  "■",
+            "default": "□",
+            "empty":   "□",
+            "urgent":  "■"
+        },
+        "on-click":       "activate",
+        "on-scroll-up":   "hyprctl dispatch workspace e+1",
+        "on-scroll-down": "hyprctl dispatch workspace e-1",
+        "all-outputs":    true,
+        "sort-by-number": true,
+        "persistent-workspaces": { "*": [1, 2, 3, 4, 5] }
+    },
+
+    "clock": {
+        "format":        "{:%H:%M}",
+        "format-alt":    "{:%a, %d %b %Y   %H:%M:%S}",
+        "tooltip-format": "<tt><big>{:%Y %B}</big>\n{calendar}</tt>",
+        "interval":      1,
+        "calendar": { "mode": "month", "weeks-pos": "right", "on-scroll": 1 }
+    },
+
+    "mpris": {
+        "format":        "{player_icon}  {dynamic}  {position}/{length}",
+        "format-paused": "{status_icon}  {dynamic}  {position}/{length}",
+        "player-icons": {
+            "default":  "󰐊",
+            "mpv":      "󰐊",
+            "spotify":  "󰓇",
+            "firefox":  "󰈹",
+            "chromium": "󰊯"
+        },
+        "status-icons": { "paused": "󰏤" },
+        "dynamic-len":   45,
+        "interval":      1,
+        "tooltip":       false
+    },
+
+    "pulseaudio": {
+        "format":           "{icon}  {volume}%",
+        "format-muted":     "󰖁  muted",
+        "format-bluetooth": "{icon}  {volume}% ",
+        "format-icons": {
+            "headphone":  "",
+            "hands-free": "",
+            "headset":    "",
+            "default":    ["", "", ""]
+        },
+        "on-click":       "kitty --class=tui-settings -e ~/.config/hypr/scripts/tui-settings.sh",
+        "on-click-right": "pulsemixer",
+        "scroll-step":    2,
+        "tooltip-format": "{desc}"
+    },
+
+    "network": {
+        "format-ethernet":     "󰈁  {ifname}",
+        "format-wifi":         "  {essid}",
+        "format-linked":       "󰈁  {ifname} (no IP)",
+        "format-disconnected": "󰖪  offline",
+        "tooltip-format-wifi":     "{essid} ({signalStrength}%)\n{ipaddr}",
+        "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
+        "on-click": "kitty --class=tui-settings -e ~/.config/hypr/scripts/tui-settings.sh",
+        "interval": 5
+    },
+
+    "battery": {
+        "states":          { "warning": 30, "critical": 15 },
+        "format":          "󰂁  {capacity}%",
+        "format-charging": "󰢝  {capacity}%",
+        "format-plugged":  "󰂄  {capacity}%",
+        "tooltip-format":  "{timeTo}"
+    },
+
+    "tray": {
+        "icon-size": 16,
+        "spacing":   8
+    },
+
+    "custom/settings": {
+        "tooltip":  false,
+        "format":   "",
+        "on-click": "kitty --class=tui-settings -e ~/.config/hypr/scripts/tui-settings.sh"
+    }
+}

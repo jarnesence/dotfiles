@@ -1,0 +1,21 @@
+# State dosyaları — install hedefinde üretilir
+.initial_startup_done
+*.state
+*.current
+edit.*
+mode.state
+
+# Derleme/geçici
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
