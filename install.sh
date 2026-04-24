@@ -98,7 +98,7 @@ mkdir -p "$HOME/.config"
 for d in hypr kitty waybar mako fastfetch fontconfig matugen opencode; do
     [ -d "$DEST/$d" ] || continue
     if [ -e "$HOME/.config/$d" ] && [ ! -L "$HOME/.config/$d" ]; then
-        warn "~/.config/$d exists (not symlink) — moving to backup"
+        warn "\$HOME/.config/$d exists (not symlink) — moving to backup"
         mv "$HOME/.config/$d" "$HOME/.config/${d}.bak-$(date +%s)"
     fi
     ln -sfn "$DEST/$d" "$HOME/.config/$d"
