@@ -9,8 +9,8 @@
 
 set -eu
 
-SRC="$HOME/Claude/dotfiles/waybar/config.jsonc"
-DEST="$HOME/.config/waybar/config.jsonc"
+SRC="$HOME/Claude/dotfiles/waybar/config.jsonc.template"
+DEST="$HOME/Claude/dotfiles/waybar/config.jsonc"
 
 # Battery yolunda bir dizi var mı? → laptop
 if ls /sys/class/power_supply/BAT* >/dev/null 2>&1; then

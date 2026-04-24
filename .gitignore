@@ -4,6 +4,8 @@ hypr/colors.conf
 waybar/colors.css
 kitty/colors.conf
 mako/config
+# waybar-host-setup.sh üretir (template.jsonc'ten):
+waybar/config.jsonc
 # gpu-detect.sh üretir:
 hypr/gpu-env.conf
 # TUI settings runtime:
