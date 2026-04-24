@@ -124,9 +124,9 @@ if [ "${SHELL:-}" != "/usr/bin/zsh" ] && command -v zsh >/dev/null; then
 fi
 
 # ── phase 9: fontconfig + cache ────────────────
+# Not: ~/.config/fontconfig zaten Phase 7'de $DEST/fontconfig'e symlink edildi,
+# dolayısıyla fonts.conf ayrıca ele alınmasın (self-link hatası verir).
 step "Phase 9/13 · fonts"
-mkdir -p "$HOME/.config/fontconfig"
-[ -f "$DEST/fontconfig/fonts.conf" ] && ln -sfn "$DEST/fontconfig/fonts.conf" "$HOME/.config/fontconfig/fonts.conf"
 fc-cache -f >/dev/null 2>&1 || true
 
 # ── phase 10: services ─────────────────────────

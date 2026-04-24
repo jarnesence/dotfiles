@@ -37,13 +37,16 @@ install_packages() {
                 nvidia-open nvidia-utils egl-wayland libva-nvidia-driver nvidia-settings
             ;;
         amd)
-            # mesa + Vulkan (radv) ana driver. AMDVLK opsiyonel, genelde gerekmez.
+            # mesa + Vulkan (radv) ana driver. AMDVLK opsiyonel, gerekmez.
+            # Not: `mesa-vdpau` Arch'tan kaldırıldı (VDPAU desteği mesa içinde).
             sudo pacman -S --noconfirm --needed \
-                mesa vulkan-radeon libva-mesa-driver mesa-vdpau
+                mesa vulkan-radeon libva-mesa-driver
             ;;
         intel)
+            # intel-media-driver (Gen8+) modern, `libva-intel-driver` eski Gen7-.
+            # Yeni laptop'larda ilki yeterli.
             sudo pacman -S --noconfirm --needed \
-                mesa vulkan-intel intel-media-driver libva-intel-driver
+                mesa vulkan-intel intel-media-driver
             ;;
         *)
             echo "Uyarı: GPU tespit edilemedi. Manuel paket kurulumu gerekir." >&2
