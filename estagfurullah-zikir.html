@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b1f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Estağfurullah Zikir</title>
+<style>
+  :root{
+    --bg1:#07150f; --bg2:#0b231a; --bg3:#0e2c20;
+    --gold:#d8b15a; --gold-soft:#e7c97e;
+    --green:#1f8f6a; --green-deep:#0f5a42;
+    --text:#eef4f0; --muted:#9db5aa;
+    --ring:#143226;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(120% 80% at 50% -10%, #15402f 0%, var(--bg2) 45%, var(--bg1) 100%);
+    background-attachment:fixed;
+    overflow:hidden;
+    user-select:none; -webkit-user-select:none;
+    display:flex; flex-direction:column;
+    height:100dvh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* ---- Header ---- */
+  header{
+    flex:0 0 auto; text-align:center; padding:14px 16px 4px;
+  }
+  .title{font-size:13px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; font-weight:600;}
+  .stats{
+    display:flex; justify-content:center; gap:10px; margin-top:10px;
+  }
+  .stat{
+    background:rgba(255,255,255,.04); border:1px solid var(--ring);
+    border-radius:14px; padding:7px 14px; min-width:84px;
+  }
+  .stat b{display:block; font-size:18px; color:var(--gold-soft); font-variant-numeric:tabular-nums;}
+  .stat span{font-size:10px; color:var(--muted); letter-spacing:.5px;}
+
+  /* ---- Dhikr text ---- */
+  .dhikr{
+    flex:0 0 auto; text-align:center; padding:10px 18px 0;
+  }
+  .arabic{
+    font-size:clamp(26px,8vw,40px); line-height:1.7; color:#fff;
+    direction:rtl; font-weight:600;
+    text-shadow:0 2px 18px rgba(216,177,90,.25);
+  }
+  .latin{margin-top:8px; font-size:14px; color:var(--gold-soft); font-style:italic; line-height:1.5;}
+  .meaning{margin-top:6px; font-size:12px; color:var(--muted); line-height:1.5;}
+
+  /* ---- Counter ---- */
+  .counter-wrap{
+    flex:1 1 auto; display:flex; align-items:center; justify-content:center;
+    position:relative; min-height:0;
+  }
+  .tap{
+    position:relative; width:min(70vw,290px); aspect-ratio:1/1;
+    border-radius:50%; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(circle at 50% 35%, #1c6048 0%, #114734 55%, #0c3527 100%);
+    box-shadow:
+      0 0 0 1px rgba(216,177,90,.30) inset,
+      0 0 50px rgba(31,143,106,.35),
+      0 18px 40px rgba(0,0,0,.45);
+    transition:transform .08s ease;
+  }
+  .tap:active{transform:scale(.965);}
+  .tap.pulse{animation:pulse .35s ease;}
+  @keyframes pulse{0%{box-shadow:0 0 0 1px rgba(216,177,90,.3) inset,0 0 50px rgba(31,143,106,.35),0 18px 40px rgba(0,0,0,.45);}
+    40%{box-shadow:0 0 0 2px rgba(216,177,90,.7) inset,0 0 70px rgba(216,177,90,.45),0 18px 40px rgba(0,0,0,.45);}
+    100%{box-shadow:0 0 0 1px rgba(216,177,90,.3) inset,0 0 50px rgba(31,143,106,.35),0 18px 40px rgba(0,0,0,.45);}}
+
+  /* progress ring */
+  .ring{position:absolute; inset:-12px; transform:rotate(-90deg);}
+  .ring circle{fill:none; stroke-width:7; stroke-linecap:round;}
+  .ring .bg{stroke:rgba(255,255,255,.06);}
+  .ring .fg{stroke:url(#grad); transition:stroke-dashoffset .25s ease;}
+
+  .count{font-size:64px; font-weight:700; color:#fff; font-variant-numeric:tabular-nums; line-height:1;}
+  .target{margin-top:6px; font-size:13px; color:var(--gold-soft); letter-spacing:1px;}
+  .hint{position:absolute; bottom:6px; font-size:11px; color:var(--muted); width:100%; text-align:center;}
+
+  /* ---- Controls ---- */
+  .controls{flex:0 0 auto; padding:6px 14px calc(14px + env(safe-area-inset-bottom));}
+  .row{display:flex; gap:8px; margin-top:8px;}
+  .chip{
+    flex:1; text-align:center; padding:9px 4px; border-radius:12px;
+    background:rgba(255,255,255,.04); border:1px solid var(--ring);
+    color:var(--text); font-size:13px; cursor:pointer; transition:all .15s;
+  }
+  .chip.active{background:linear-gradient(180deg,#1f8f6a,#0f5a42); border-color:var(--gold); color:#fff; font-weight:600;}
+  .chip:active{transform:scale(.96);}
+  .btn{
+    flex:1; padding:11px; border-radius:13px; border:1px solid var(--ring);
+    background:rgba(255,255,255,.04); color:var(--text); font-size:13px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn.warn{color:#ff9a8b;}
+  .label{font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin:10px 0 0; text-align:center;}
+
+  .toast{
+    position:fixed; left:50%; top:18%; transform:translateX(-50%) translateY(-20px);
+    background:linear-gradient(180deg,#d8b15a,#b8923f); color:#1a2b22;
+    padding:12px 22px; border-radius:30px; font-weight:700; font-size:15px;
+    opacity:0; pointer-events:none; transition:all .35s; box-shadow:0 10px 30px rgba(0,0,0,.4); z-index:50;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="title">۞ Estağfurullah ۞</div>
+    <div class="stats">
+      <div class="stat"><b id="sToday">0</b><span>BUGÜN</span></div>
+      <div class="stat"><b id="sRound">0</b><span>TUR</span></div>
+      <div class="stat"><b id="sTotal">0</b><span>TOPLAM</span></div>
+    </div>
+  </header>
+
+  <div class="dhikr">
+    <div class="arabic" id="arabic"></div>
+    <div class="latin" id="latin"></div>
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <div class="counter-wrap">
+    <div class="tap" id="tap">
+      <svg class="ring" viewBox="0 0 100 100" id="ringSvg">
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#e7c97e"/>
+            <stop offset="100%" stop-color="#1f8f6a"/>
+          </linearGradient>
+        </defs>
+        <circle class="bg" cx="50" cy="50" r="46"/>
+        <circle class="fg" id="ringFg" cx="50" cy="50" r="46"/>
+      </svg>
+      <div style="text-align:center; z-index:2;">
+        <div class="count" id="count">0</div>
+        <div class="target" id="targetLbl">/ 33</div>
+      </div>
+      <div class="hint">dokun</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="label">Zikir</div>
+    <div class="row" id="dhikrRow"></div>
+    <div class="label">Hedef</div>
+    <div class="row" id="targetRow"></div>
+    <div class="row">
+      <button class="btn" id="undo">↩ Geri al</button>
+      <button class="btn warn" id="reset">↺ Sıfırla</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ----------------------------------------------------------
+   Estağfurullah (İstiğfar) zikirleri — en sahih kısa formlar
+---------------------------------------------------------- */
+const DHIKRS = [
+  {
+    key:"kisa",
+    short:"Kısa",
+    arabic:"أَسْتَغْفِرُ ٱللّٰهَ",
+    latin:"Estağfirullâh",
+    meaning:"«Allah'tan bağışlanma dilerim.»"
+  },
+  {
+    key:"azim",
+    short:"el-Azîm",
+    arabic:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ",
+    latin:"Estağfirullâhe'l-azîm",
+    meaning:"«Yüce Allah'tan bağışlanma dilerim.»"
+  },
+  {
+    key:"tam",
+    short:"Tam",
+    arabic:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ ٱلَّذِي لَا إِلٰهَ إِلَّا هُوَ ٱلْحَيَّ ٱلْقَيُّومَ وَأَتُوبُ إِلَيْهِ",
+    latin:"Estağfirullâhe'l-azîme'llezî lâ ilâhe illâ hüve'l-hayye'l-kayyûme ve etûbü ileyh",
+    meaning:"«Kendisinden başka ilah olmayan, diri ve her şeyi ayakta tutan Yüce Allah'tan bağışlanma diler ve O'na tevbe ederim.»"
+  }
+];
+const TARGETS = [33, 99, 100, 1000, 0]; // 0 = sınırsız (∞)
+
+/* ---- State (localStorage) ---- */
+const LS = "estagfurullah_v1";
+function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+const def = { dhikr:1, target:0, count:0, round:0, total:0, day:todayKey(), today:0 };
+let S = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(LS);
+    if(!raw) return {...def};
+    const s = {...def, ...JSON.parse(raw)};
+    if(s.day !== todayKey()){ s.day = todayKey(); s.today = 0; } // günlük sayaç sıfırlanır
+    return s;
+  }catch(e){ return {...def}; }
+}
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+
+/* ---- DOM ---- */
+const $ = id => document.getElementById(id);
+const tap=$("tap"), countEl=$("count"), targetLbl=$("targetLbl");
+const ringFg=$("ringFg"), R=46, CIRC=2*Math.PI*R;
+ringFg.style.strokeDasharray = CIRC;
+
+/* ---- Audio (tek dosya, harici kaynak yok) ---- */
+let actx=null;
+function tick(){
+  try{
+    if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type="sine"; o.frequency.value=880;
+    g.gain.setValueAtTime(0.0001, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.12, actx.currentTime+0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+0.09);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime+0.1);
+  }catch(e){}
+}
+function vibe(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} }
+
+/* ---- Render ---- */
+function buildChips(){
+  const dr=$("dhikrRow"); dr.innerHTML="";
+  DHIKRS.forEach((d,i)=>{
+    const c=document.createElement("div");
+    c.className="chip"+(i===S.dhikr?" active":"");
+    c.textContent=d.short;
+    c.onclick=()=>{ S.dhikr=i; render(); save(); };
+    dr.appendChild(c);
+  });
+  const tr=$("targetRow"); tr.innerHTML="";
+  TARGETS.forEach(t=>{
+    const c=document.createElement("div");
+    c.className="chip"+(t===S.target?" active":"");
+    c.textContent = t===0 ? "∞" : t;
+    c.onclick=()=>{ S.target=t; render(); save(); };
+    tr.appendChild(c);
+  });
+}
+function render(){
+  const d=DHIKRS[S.dhikr];
+  $("arabic").textContent=d.arabic;
+  $("latin").textContent=d.latin;
+  $("meaning").textContent=d.meaning;
+  countEl.textContent=S.count;
+  targetLbl.textContent = S.target===0 ? "∞" : "/ "+S.target;
+  $("sToday").textContent=S.today;
+  $("sRound").textContent=S.round;
+  $("sTotal").textContent=S.total;
+  // ring
+  let frac = S.target===0 ? (S.count%33)/33 : Math.min(S.count/S.target,1);
+  ringFg.style.strokeDashoffset = CIRC*(1-frac);
+  // active chip
+  document.querySelectorAll("#dhikrRow .chip").forEach((c,i)=>c.classList.toggle("active",i===S.dhikr));
+  document.querySelectorAll("#targetRow .chip").forEach((c,i)=>c.classList.toggle("active",TARGETS[i]===S.target));
+}
+
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),1800);
+}
+
+/* ---- Count ---- */
+function doCount(){
+  S.count++; S.total++; S.today++;
+  tap.classList.remove("pulse"); void tap.offsetWidth; tap.classList.add("pulse");
+  tick(); vibe(18);
+  if(S.target!==0 && S.count>=S.target){
+    S.round++;
+    S.count=0;
+    vibe([60,40,120]);
+    toast("✦ "+S.round+". tur tamam ✦");
+  }
+  render(); save();
+}
+
+/* ---- Events ---- */
+tap.addEventListener("pointerdown", e=>{ e.preventDefault(); doCount(); }, {passive:false});
+
+$("undo").onclick=()=>{
+  if(S.count>0){ S.count--; if(S.total>0)S.total--; if(S.today>0)S.today--; }
+  else if(S.round>0){ S.round--; S.count=(S.target||33)-1; if(S.total>0)S.total--; if(S.today>0)S.today--; }
+  render(); save();
+};
+$("reset").onclick=()=>{
+  if(confirm("Sayaç ve tur sıfırlansın mı?\n(Toplam ve bugün korunur)")){
+    S.count=0; S.round=0; render(); save(); toast("Sıfırlandı");
+  }
+};
+
+/* uyku engelle (destekleyen cihazlarda) */
+let wl=null;
+async function keepAwake(){ try{ if("wakeLock" in navigator){ wl=await navigator.wakeLock.request("screen"); } }catch(e){} }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") keepAwake(); });
+keepAwake();
+
+buildChips();
+render();
+</script>
+</body>
+</html>
