@@ -10,7 +10,7 @@
 <title>Estağfurullah Zikir</title>
 <style>
   :root{
-    --bg1:#07150f; --bg2:#0b231a; --bg3:#0e2c20;
+    --bg1:#07150f; --bg2:#0b231a;
     --gold:#d8b15a; --gold-soft:#e7c97e;
     --green:#1f8f6a; --green-deep:#0f5a42;
     --text:#eef4f0; --muted:#9db5aa;
@@ -21,101 +21,62 @@
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     color:var(--text);
-    background:
-      radial-gradient(120% 80% at 50% -10%, #15402f 0%, var(--bg2) 45%, var(--bg1) 100%);
+    background:radial-gradient(120% 80% at 50% -10%, #15402f 0%, var(--bg2) 45%, var(--bg1) 100%);
     background-attachment:fixed;
-    overflow:hidden;
-    user-select:none; -webkit-user-select:none;
-    display:flex; flex-direction:column;
-    height:100dvh;
+    overflow:hidden; user-select:none; -webkit-user-select:none;
+    display:flex; flex-direction:column; height:100dvh;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
-  /* ---- Header ---- */
-  header{
-    flex:0 0 auto; text-align:center; padding:14px 16px 4px;
-  }
+  header{flex:0 0 auto; text-align:center; padding:12px 16px 2px;}
   .title{font-size:13px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; font-weight:600;}
-  .stats{
-    display:flex; justify-content:center; gap:10px; margin-top:10px;
-  }
-  .stat{
-    background:rgba(255,255,255,.04); border:1px solid var(--ring);
-    border-radius:14px; padding:7px 14px; min-width:84px;
-  }
+  .stats{display:flex; justify-content:center; gap:9px; margin-top:9px;}
+  .stat{background:rgba(255,255,255,.04); border:1px solid var(--ring); border-radius:14px; padding:7px 13px; min-width:82px;}
   .stat b{display:block; font-size:18px; color:var(--gold-soft); font-variant-numeric:tabular-nums;}
   .stat span{font-size:10px; color:var(--muted); letter-spacing:.5px;}
 
-  /* ---- Dhikr text ---- */
-  .dhikr{
-    flex:0 0 auto; text-align:center; padding:10px 18px 0;
-  }
-  .arabic{
-    font-size:clamp(26px,8vw,40px); line-height:1.7; color:#fff;
-    direction:rtl; font-weight:600;
-    text-shadow:0 2px 18px rgba(216,177,90,.25);
-  }
-  .latin{margin-top:8px; font-size:14px; color:var(--gold-soft); font-style:italic; line-height:1.5;}
-  .meaning{margin-top:6px; font-size:12px; color:var(--muted); line-height:1.5;}
+  .dhikr{flex:0 0 auto; text-align:center; padding:8px 18px 0;}
+  .arabic{font-size:clamp(24px,7.5vw,38px); line-height:1.7; color:#fff; direction:rtl; font-weight:600; text-shadow:0 2px 18px rgba(216,177,90,.25);}
+  .latin{margin-top:7px; font-size:13.5px; color:var(--gold-soft); font-style:italic; line-height:1.5;}
+  .meaning{margin-top:5px; font-size:11.5px; color:var(--muted); line-height:1.5;}
 
-  /* ---- Counter ---- */
-  .counter-wrap{
-    flex:1 1 auto; display:flex; align-items:center; justify-content:center;
-    position:relative; min-height:0;
-  }
+  .counter-wrap{flex:1 1 auto; display:flex; align-items:center; justify-content:center; position:relative; min-height:0;}
   .tap{
-    position:relative; width:min(70vw,290px); aspect-ratio:1/1;
-    border-radius:50%; cursor:pointer;
+    position:relative; width:min(70vw,290px); aspect-ratio:1/1; border-radius:50%; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
-    background:
-      radial-gradient(circle at 50% 35%, #1c6048 0%, #114734 55%, #0c3527 100%);
-    box-shadow:
-      0 0 0 1px rgba(216,177,90,.30) inset,
-      0 0 50px rgba(31,143,106,.35),
-      0 18px 40px rgba(0,0,0,.45);
+    background:radial-gradient(circle at 50% 35%, #1c6048 0%, #114734 55%, #0c3527 100%);
+    box-shadow:0 0 0 1px rgba(216,177,90,.30) inset, 0 0 50px rgba(31,143,106,.35), 0 18px 40px rgba(0,0,0,.45);
     transition:transform .08s ease;
   }
   .tap:active{transform:scale(.965);}
   .tap.pulse{animation:pulse .35s ease;}
   @keyframes pulse{0%{box-shadow:0 0 0 1px rgba(216,177,90,.3) inset,0 0 50px rgba(31,143,106,.35),0 18px 40px rgba(0,0,0,.45);}
-    40%{box-shadow:0 0 0 2px rgba(216,177,90,.7) inset,0 0 70px rgba(216,177,90,.45),0 18px 40px rgba(0,0,0,.45);}
+    40%{box-shadow:0 0 0 2px rgba(216,177,90,.75) inset,0 0 75px rgba(216,177,90,.5),0 18px 40px rgba(0,0,0,.45);}
     100%{box-shadow:0 0 0 1px rgba(216,177,90,.3) inset,0 0 50px rgba(31,143,106,.35),0 18px 40px rgba(0,0,0,.45);}}
 
-  /* progress ring */
   .ring{position:absolute; inset:-12px; transform:rotate(-90deg);}
   .ring circle{fill:none; stroke-width:7; stroke-linecap:round;}
   .ring .bg{stroke:rgba(255,255,255,.06);}
   .ring .fg{stroke:url(#grad); transition:stroke-dashoffset .25s ease;}
 
-  .count{font-size:64px; font-weight:700; color:#fff; font-variant-numeric:tabular-nums; line-height:1;}
-  .target{margin-top:6px; font-size:13px; color:var(--gold-soft); letter-spacing:1px;}
-  .hint{position:absolute; bottom:6px; font-size:11px; color:var(--muted); width:100%; text-align:center;}
+  .count{font-size:78px; font-weight:800; color:#fff; font-variant-numeric:tabular-nums; line-height:1; letter-spacing:-1px;}
+  .target{margin-top:4px; font-size:14px; color:var(--gold-soft); letter-spacing:1px;}
+  .edit{margin-top:2px; font-size:9.5px; color:var(--muted); letter-spacing:.5px;}
+  .hint{position:absolute; bottom:4px; font-size:11px; color:var(--muted); width:100%; text-align:center; pointer-events:none;}
 
-  /* ---- Controls ---- */
-  .controls{flex:0 0 auto; padding:6px 14px calc(14px + env(safe-area-inset-bottom));}
-  .row{display:flex; gap:8px; margin-top:8px;}
-  .chip{
-    flex:1; text-align:center; padding:9px 4px; border-radius:12px;
-    background:rgba(255,255,255,.04); border:1px solid var(--ring);
-    color:var(--text); font-size:13px; cursor:pointer; transition:all .15s;
-  }
+  .controls{flex:0 0 auto; padding:4px 14px calc(12px + env(safe-area-inset-bottom));}
+  .row{display:flex; gap:8px; margin-top:7px;}
+  .chip{flex:1; text-align:center; padding:9px 4px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid var(--ring); color:var(--text); font-size:13px; cursor:pointer; transition:all .15s; position:relative;}
   .chip.active{background:linear-gradient(180deg,#1f8f6a,#0f5a42); border-color:var(--gold); color:#fff; font-weight:600;}
   .chip:active{transform:scale(.96);}
-  .btn{
-    flex:1; padding:11px; border-radius:13px; border:1px solid var(--ring);
-    background:rgba(255,255,255,.04); color:var(--text); font-size:13px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s;
-  }
+  .chip small{display:block; font-size:9px; color:var(--gold-soft); margin-top:2px; font-variant-numeric:tabular-nums;}
+  .chip.active small{color:#fff;}
+  .btn{flex:1; padding:11px; border-radius:13px; border:1px solid var(--ring); background:rgba(255,255,255,.04); color:var(--text); font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s;}
   .btn:active{transform:scale(.97);}
   .btn.warn{color:#ff9a8b;}
-  .label{font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin:10px 0 0; text-align:center;}
+  .label{font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin:9px 0 0; text-align:center;}
 
-  .toast{
-    position:fixed; left:50%; top:18%; transform:translateX(-50%) translateY(-20px);
-    background:linear-gradient(180deg,#d8b15a,#b8923f); color:#1a2b22;
-    padding:12px 22px; border-radius:30px; font-weight:700; font-size:15px;
-    opacity:0; pointer-events:none; transition:all .35s; box-shadow:0 10px 30px rgba(0,0,0,.4); z-index:50;
-  }
+  .toast{position:fixed; left:50%; top:16%; transform:translateX(-50%) translateY(-20px); background:linear-gradient(180deg,#d8b15a,#b8923f); color:#1a2b22; padding:12px 22px; border-radius:30px; font-weight:700; font-size:15px; opacity:0; pointer-events:none; transition:all .35s; box-shadow:0 10px 30px rgba(0,0,0,.4); z-index:50;}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 </style>
 </head>
@@ -138,7 +99,7 @@
 
   <div class="counter-wrap">
     <div class="tap" id="tap">
-      <svg class="ring" viewBox="0 0 100 100" id="ringSvg">
+      <svg class="ring" viewBox="0 0 100 100">
         <defs>
           <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#e7c97e"/>
@@ -151,13 +112,14 @@
       <div style="text-align:center; z-index:2;">
         <div class="count" id="count">0</div>
         <div class="target" id="targetLbl">/ 33</div>
+        <div class="edit" id="editHint">✎ sayıya basılı tut: düzelt</div>
       </div>
       <div class="hint">dokun</div>
     </div>
   </div>
 
   <div class="controls">
-    <div class="label">Zikir</div>
+    <div class="label">Versiyon</div>
     <div class="row" id="dhikrRow"></div>
     <div class="label">Hedef</div>
     <div class="row" id="targetRow"></div>
@@ -173,49 +135,65 @@
 "use strict";
 
 /* ----------------------------------------------------------
-   Estağfurullah (İstiğfar) zikirleri — en sahih kısa formlar
+   Estağfurullah (İstiğfar) — en sahih kısa/uzun formlar
 ---------------------------------------------------------- */
 const DHIKRS = [
-  {
-    key:"kisa",
-    short:"Kısa",
+  { key:"kisa", short:"Kısa",
     arabic:"أَسْتَغْفِرُ ٱللّٰهَ",
     latin:"Estağfirullâh",
-    meaning:"«Allah'tan bağışlanma dilerim.»"
-  },
-  {
-    key:"azim",
-    short:"el-Azîm",
+    meaning:"«Allah'tan bağışlanma dilerim.»" },
+  { key:"orta", short:"Orta",
     arabic:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ",
     latin:"Estağfirullâhe'l-azîm",
-    meaning:"«Yüce Allah'tan bağışlanma dilerim.»"
-  },
-  {
-    key:"tam",
-    short:"Tam",
+    meaning:"«Yüce Allah'tan bağışlanma dilerim.»" },
+  { key:"uzun", short:"Uzun",
     arabic:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ ٱلَّذِي لَا إِلٰهَ إِلَّا هُوَ ٱلْحَيَّ ٱلْقَيُّومَ وَأَتُوبُ إِلَيْهِ",
     latin:"Estağfirullâhe'l-azîme'llezî lâ ilâhe illâ hüve'l-hayye'l-kayyûme ve etûbü ileyh",
-    meaning:"«Kendisinden başka ilah olmayan, diri ve her şeyi ayakta tutan Yüce Allah'tan bağışlanma diler ve O'na tevbe ederim.»"
-  }
+    meaning:"«Kendisinden başka ilah olmayan, Hayy ve Kayyûm olan Yüce Allah'tan bağışlanma diler ve O'na tevbe ederim.»" }
 ];
-const TARGETS = [33, 99, 100, 1000, 0]; // 0 = sınırsız (∞)
+const TARGETS = [33, 99, 100, 1000, 0]; // 0 = ∞
 
-/* ---- State (localStorage) ---- */
-const LS = "estagfurullah_v1";
+/* ----------------------------------------------------------
+   State — HER VERSİYON KENDİ SAYISINI TUTAR.
+   per[key] = { count, round, total }   (versiyona özel)
+   today / total / day = genel toplamlar
+---------------------------------------------------------- */
+const LS = "estagfurullah_v2";
 function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
-const def = { dhikr:1, target:0, count:0, round:0, total:0, day:todayKey(), today:0 };
-let S = load();
+function freshPer(){ const o={}; DHIKRS.forEach(d=>o[d.key]={count:0,round:0,total:0}); return o; }
+const def = { dhikr:0, target:33, per:freshPer(), today:0, total:0, day:todayKey() };
 
+let S = load();
 function load(){
   try{
     const raw = localStorage.getItem(LS);
-    if(!raw) return {...def};
+    if(!raw){ return migrate(); }
     const s = {...def, ...JSON.parse(raw)};
-    if(s.day !== todayKey()){ s.day = todayKey(); s.today = 0; } // günlük sayaç sıfırlanır
+    s.per = {...freshPer(), ...(s.per||{})};
+    DHIKRS.forEach(d=>{ s.per[d.key] = {count:0,round:0,total:0, ...(s.per[d.key]||{})}; });
+    if(s.day !== todayKey()){ s.day = todayKey(); s.today = 0; }
     return s;
-  }catch(e){ return {...def}; }
+  }catch(e){ return {...def, per:freshPer()}; }
+}
+/* eski v1 verisini taşı (varsa) */
+function migrate(){
+  try{
+    const old = JSON.parse(localStorage.getItem("estagfurullah_v1")||"null");
+    if(old){
+      const s = {...def, per:freshPer()};
+      s.total = old.total||0; s.today = old.today||0; s.day = old.day||todayKey();
+      const k = DHIKRS[old.dhikr]?.key || "kisa";
+      s.per[k] = {count:old.count||0, round:old.round||0, total:old.total||0};
+      if(s.day!==todayKey()){ s.day=todayKey(); s.today=0; }
+      return s;
+    }
+  }catch(e){}
+  return {...def, per:freshPer()};
 }
 function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+
+const cur = () => DHIKRS[S.dhikr];
+const P   = () => S.per[cur().key];
 
 /* ---- DOM ---- */
 const $ = id => document.getElementById(id);
@@ -223,11 +201,11 @@ const tap=$("tap"), countEl=$("count"), targetLbl=$("targetLbl");
 const ringFg=$("ringFg"), R=46, CIRC=2*Math.PI*R;
 ringFg.style.strokeDasharray = CIRC;
 
-/* ---- Audio (tek dosya, harici kaynak yok) ---- */
+/* ---- Ses + titreşim ---- */
 let actx=null;
 function tick(){
   try{
-    if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
     const o=actx.createOscillator(), g=actx.createGain();
     o.type="sine"; o.frequency.value=880;
     g.gain.setValueAtTime(0.0001, actx.currentTime);
@@ -245,7 +223,7 @@ function buildChips(){
   DHIKRS.forEach((d,i)=>{
     const c=document.createElement("div");
     c.className="chip"+(i===S.dhikr?" active":"");
-    c.textContent=d.short;
+    c.innerHTML = d.short + "<small>"+(S.per[d.key].total)+"</small>";
     c.onclick=()=>{ S.dhikr=i; render(); save(); };
     dr.appendChild(c);
   });
@@ -259,57 +237,86 @@ function buildChips(){
   });
 }
 function render(){
-  const d=DHIKRS[S.dhikr];
+  const d=cur(), p=P();
   $("arabic").textContent=d.arabic;
   $("latin").textContent=d.latin;
   $("meaning").textContent=d.meaning;
-  countEl.textContent=S.count;
+  countEl.textContent=p.count;
   targetLbl.textContent = S.target===0 ? "∞" : "/ "+S.target;
   $("sToday").textContent=S.today;
-  $("sRound").textContent=S.round;
+  $("sRound").textContent=p.round;
   $("sTotal").textContent=S.total;
-  // ring
-  let frac = S.target===0 ? (S.count%33)/33 : Math.min(S.count/S.target,1);
+  let frac = S.target===0 ? (p.count%33)/33 : Math.min(p.count/S.target,1);
   ringFg.style.strokeDashoffset = CIRC*(1-frac);
-  // active chip
-  document.querySelectorAll("#dhikrRow .chip").forEach((c,i)=>c.classList.toggle("active",i===S.dhikr));
+  // chip rozetleri + aktiflik
+  document.querySelectorAll("#dhikrRow .chip").forEach((c,i)=>{
+    c.classList.toggle("active",i===S.dhikr);
+    const sm=c.querySelector("small"); if(sm) sm.textContent=S.per[DHIKRS[i].key].total;
+  });
   document.querySelectorAll("#targetRow .chip").forEach((c,i)=>c.classList.toggle("active",TARGETS[i]===S.target));
 }
-
 function toast(msg){
   const t=$("toast"); t.textContent=msg; t.classList.add("show");
-  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),1800);
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),1700);
 }
 
-/* ---- Count ---- */
+/* ---- Sayım ---- */
 function doCount(){
-  S.count++; S.total++; S.today++;
+  const p=P();
+  p.count++; p.total++; S.total++; S.today++;
   tap.classList.remove("pulse"); void tap.offsetWidth; tap.classList.add("pulse");
   tick(); vibe(18);
-  if(S.target!==0 && S.count>=S.target){
-    S.round++;
-    S.count=0;
-    vibe([60,40,120]);
-    toast("✦ "+S.round+". tur tamam ✦");
+  if(S.target!==0 && p.count>=S.target){
+    p.round++; p.count=0;
+    vibe([60,40,120]); toast("✦ "+p.round+". tur tamam ✦");
   }
   render(); save();
 }
 
-/* ---- Events ---- */
-tap.addEventListener("pointerdown", e=>{ e.preventDefault(); doCount(); }, {passive:false});
+/* ---- Elle düzeltme (sayıya basılı tut) ---- */
+function manualEdit(){
+  const p=P();
+  const v=prompt("Sayacı düzelt — yeni değer:", p.count);
+  if(v===null) return;
+  const n=Math.max(0, Math.floor(Number(v)));
+  if(!isFinite(n)) return;
+  const delta = n - p.count;            // fark toplamlara da yansır
+  p.count = n;
+  p.total = Math.max(0, p.total+delta);
+  S.total = Math.max(0, S.total+delta);
+  S.today = Math.max(0, S.today+delta);
+  render(); save(); toast("Sayaç düzeltildi");
+}
+
+/* ---- Olaylar (dokun = +1, basılı tut = düzelt) ---- */
+let holdTimer=null, held=false;
+tap.addEventListener("pointerdown", e=>{
+  e.preventDefault(); held=false;
+  holdTimer=setTimeout(()=>{ held=true; vibe(40); manualEdit(); }, 550);
+}, {passive:false});
+function endHold(){ clearTimeout(holdTimer); }
+tap.addEventListener("pointerup", e=>{
+  e.preventDefault(); clearTimeout(holdTimer);
+  if(!held) doCount();
+}, {passive:false});
+tap.addEventListener("pointerleave", endHold);
+tap.addEventListener("pointercancel", endHold);
 
 $("undo").onclick=()=>{
-  if(S.count>0){ S.count--; if(S.total>0)S.total--; if(S.today>0)S.today--; }
-  else if(S.round>0){ S.round--; S.count=(S.target||33)-1; if(S.total>0)S.total--; if(S.today>0)S.today--; }
+  const p=P();
+  if(p.count>0){ p.count--; }
+  else if(p.round>0){ p.round--; p.count=(S.target||33)-1; }
+  else return;
+  if(p.total>0)p.total--; if(S.total>0)S.total--; if(S.today>0)S.today--;
   render(); save();
 };
 $("reset").onclick=()=>{
-  if(confirm("Sayaç ve tur sıfırlansın mı?\n(Toplam ve bugün korunur)")){
-    S.count=0; S.round=0; render(); save(); toast("Sıfırlandı");
-  }
+  const choice = prompt("Sıfırlama:\n1 = sadece bu versiyonun sayacı/turu\n2 = HER ŞEY (tüm versiyonlar + toplam)\n\n1 veya 2 yaz:", "1");
+  if(choice==="1"){ const p=P(); p.count=0; p.round=0; render(); save(); toast("Bu versiyon sıfırlandı"); }
+  else if(choice==="2"){ if(confirm("TÜM sayılar silinsin mi? Geri alınamaz.")){ S=JSON.parse(JSON.stringify(def)); S.per=freshPer(); save(); render(); buildChips(); toast("Her şey sıfırlandı"); } }
 };
 
-/* uyku engelle (destekleyen cihazlarda) */
+/* ekranı açık tut */
 let wl=null;
 async function keepAwake(){ try{ if("wakeLock" in navigator){ wl=await navigator.wakeLock.request("screen"); } }catch(e){} }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") keepAwake(); });
