@@ -7,307 +7,578 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Estağfurullah</title>
+<title>Havas Zikir</title>
 <style>
   :root{
     --bg:#0a0f0d; --ink:#eef2ef; --muted:#7c8c84;
     --gold:#c9a35a; --gold-soft:#e3c98a;
-    --line:rgba(255,255,255,.07);
-    --glass:rgba(255,255,255,.035);
+    --line:rgba(255,255,255,.07); --glass:rgba(255,255,255,.035);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%; margin:0;}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     color:var(--ink); background:var(--bg);
-    background-image:radial-gradient(130% 90% at 50% 8%, #15201b 0%, #0c130f 55%, #070b09 100%);
-    background-attachment:fixed;
-    overflow:hidden; user-select:none; -webkit-user-select:none;
-    height:100dvh; display:flex; flex-direction:column;
+    background-image:radial-gradient(130% 90% at 50% 6%, #15201b 0%, #0c130f 55%, #070b09 100%);
+    background-attachment:fixed; overflow:hidden; user-select:none; -webkit-user-select:none;
+    height:100dvh;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
+  .view{position:absolute; inset:0; display:none; flex-direction:column; height:100%;}
+  .view.active{display:flex;}
 
-  /* ----- Üst: zikir metni (sade) ----- */
-  .top{flex:0 0 auto; text-align:center; padding:22px 24px 0;}
-  .arabic{font-size:clamp(22px,7vw,34px); line-height:1.85; color:#fbf7ee; direction:rtl; font-weight:500; letter-spacing:.5px;}
-  .latin{margin-top:10px; font-size:13px; color:var(--gold-soft); font-style:italic; line-height:1.55; font-weight:300;}
+  /* ---------- ortak başlık ---------- */
+  .nav{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:14px 16px 6px;}
+  .back{width:40px; height:40px; border-radius:12px; border:1px solid var(--line); background:var(--glass); color:var(--ink); display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; flex:0 0 auto;}
+  .back:active{transform:scale(.92);}
+  .nav h1{margin:0; font-size:14px; letter-spacing:2px; color:var(--gold); font-weight:600; text-transform:uppercase;}
+  .nav .sub{font-size:10px; color:var(--muted); letter-spacing:1px;}
+
+  /* ---------- HOME ---------- */
+  #home{justify-content:flex-start;}
+  .hero{text-align:center; padding:34px 24px 14px;}
+  .hero .sym{font-size:30px; color:var(--gold); opacity:.9;}
+  .hero h1{margin:10px 0 4px; font-size:20px; letter-spacing:5px; color:#fbf7ee; font-weight:300;}
+  .hero p{margin:0; font-size:11px; color:var(--muted); letter-spacing:1px;}
+  .cards{flex:1 1 auto; overflow-y:auto; padding:8px 16px 20px;}
+  .card{display:flex; align-items:center; gap:14px; padding:18px; border-radius:18px; border:1px solid var(--line); background:var(--glass); margin-top:12px; cursor:pointer; transition:transform .12s, border-color .2s;}
+  .card:active{transform:scale(.985);}
+  .card .ic{width:46px; height:46px; flex:0 0 auto; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:22px; background:linear-gradient(180deg,rgba(201,163,90,.18),rgba(201,163,90,.05)); color:var(--gold-soft);}
+  .card .tx{flex:1 1 auto;}
+  .card .tx b{display:block; font-size:16px; font-weight:500; color:#fff;}
+  .card .tx span{font-size:11.5px; color:var(--muted);}
+  .card .ar{color:var(--muted); font-size:20px;}
+  .card.accent{border-color:rgba(201,163,90,.4);}
+  .resume{margin:14px 2px 2px; font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase;}
+
+  /* ---------- LIST ---------- */
+  .list{flex:1 1 auto; overflow-y:auto; padding:4px 14px 22px;}
+  .gsec{font-size:10px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:16px 4px 6px; opacity:.85;}
+  .row{display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:14px; border:1px solid var(--line); background:var(--glass); margin-top:8px; cursor:pointer; transition:transform .1s;}
+  .row:active{transform:scale(.99);}
+  .row .idx{width:30px; flex:0 0 auto; text-align:center; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .row .ar{flex:0 0 auto; min-width:62px; text-align:right; font-size:21px; color:#fbf7ee; direction:rtl;}
+  .row .tx{flex:1 1 auto; min-width:0;}
+  .row .tx b{display:block; font-size:14.5px; font-weight:500; color:#fff;}
+  .row .tx span{display:block; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .row .eb{flex:0 0 auto; text-align:right;}
+  .row .eb b{font-size:15px; color:var(--gold-soft); font-variant-numeric:tabular-nums;}
+  .row .eb span{font-size:9px; color:var(--muted); display:block; letter-spacing:1px;}
+
+  /* ---------- COUNTER ---------- */
+  #counter .top{flex:0 0 auto; text-align:center; padding:6px 18px 0; max-height:36dvh; overflow-y:auto;}
+  .arabic{font-size:clamp(20px,6.4vw,32px); line-height:1.85; color:#fbf7ee; direction:rtl; font-weight:500;}
+  .latin{margin-top:9px; font-size:13px; color:var(--gold-soft); font-style:italic; line-height:1.5; font-weight:300;}
   .meaning{margin-top:6px; font-size:11px; color:var(--muted); line-height:1.5; font-weight:300; max-width:520px; margin-left:auto; margin-right:auto;}
-
-  /* ----- Orta: sayaç sahnesi ----- */
   .stage{flex:1 1 auto; position:relative; display:flex; align-items:center; justify-content:center; min-height:0; cursor:pointer;}
-  .breath{position:absolute; width:min(92vw,420px); aspect-ratio:1; border-radius:50%;
-    background:radial-gradient(circle, rgba(201,163,90,.10) 0%, rgba(201,163,90,0) 70%);
-    animation:breathe 10s ease-in-out infinite;}
+  .breath{position:absolute; width:min(92vw,420px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, rgba(201,163,90,.10) 0%, rgba(201,163,90,0) 70%); animation:breathe 10s ease-in-out infinite;}
   @keyframes breathe{0%,100%{transform:scale(.82); opacity:.45;} 50%{transform:scale(1.05); opacity:.9;}}
-
-  .dial{position:relative; width:min(66vw,260px); aspect-ratio:1; display:flex; align-items:center; justify-content:center;}
+  .dial{position:relative; width:min(64vw,250px); aspect-ratio:1; display:flex; align-items:center; justify-content:center;}
   .ring{position:absolute; inset:0; transform:rotate(-90deg);}
   .ring circle{fill:none; stroke-width:2.5; stroke-linecap:round;}
   .ring .bg{stroke:var(--line);}
   .ring .fg{stroke:var(--gold); transition:stroke-dashoffset .35s ease; filter:drop-shadow(0 0 6px rgba(201,163,90,.45));}
-  .num{text-align:center;}
-  .count{font-size:clamp(58px,17vw,84px); font-weight:200; color:#fff; font-variant-numeric:tabular-nums; line-height:1; letter-spacing:-2px;}
+  .count{font-size:clamp(54px,16vw,80px); font-weight:200; color:#fff; font-variant-numeric:tabular-nums; line-height:1; letter-spacing:-2px;}
   .of{margin-top:8px; font-size:12px; color:var(--muted); letter-spacing:2px; font-weight:300;}
-  .note{margin-top:10px; font-size:10.5px; color:var(--gold); opacity:.75; letter-spacing:.3px; font-weight:300; min-height:14px; padding:0 16px;}
-
-  /* ----- Alt: minimal bar ----- */
+  .note{margin-top:10px; font-size:10.5px; color:var(--gold); opacity:.8; letter-spacing:.3px; font-weight:300; min-height:14px; padding:0 16px;}
   .meta{flex:0 0 auto; text-align:center; font-size:10.5px; color:var(--muted); letter-spacing:1.5px; font-weight:300; padding:2px 0 8px;}
   .meta b{color:var(--gold-soft); font-weight:400;}
   .bar{flex:0 0 auto; display:flex; gap:10px; padding:0 16px calc(16px + env(safe-area-inset-bottom));}
-  .bbtn{flex:0 0 auto; width:50px; height:50px; border-radius:16px; border:1px solid var(--line); background:var(--glass); color:var(--ink); font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .12s;}
+  .bbtn{flex:0 0 auto; width:50px; height:50px; border-radius:16px; border:1px solid var(--line); background:var(--glass); color:var(--ink); font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer;}
   .bbtn:active{transform:scale(.92);}
-  .bsel{flex:1 1 auto; height:50px; border-radius:16px; border:1px solid var(--line); background:var(--glass); color:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:transform .12s; gap:1px;}
+  .bsel{flex:1 1 auto; height:50px; border-radius:16px; border:1px solid var(--line); background:var(--glass); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; gap:1px;}
   .bsel:active{transform:scale(.98);}
-  .bsel .v{font-size:14px; color:#fff; font-weight:400;}
+  .bsel .v{font-size:14px; color:#fff;}
   .bsel .h{font-size:10px; color:var(--gold-soft); letter-spacing:.5px;}
 
-  /* ----- Sheet ----- */
+  /* ---------- SHEET ---------- */
   .scrim{position:fixed; inset:0; background:rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:opacity .25s; z-index:40; backdrop-filter:blur(2px);}
   .scrim.show{opacity:1; pointer-events:auto;}
-  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:41; transform:translateY(102%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
-    background:#0e1714; border-top:1px solid var(--line); border-radius:22px 22px 0 0; padding:10px 18px calc(20px + env(safe-area-inset-bottom));
-    max-height:86dvh; overflow-y:auto;}
+  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:41; transform:translateY(102%); transition:transform .3s cubic-bezier(.2,.8,.2,1); background:#0e1714; border-top:1px solid var(--line); border-radius:22px 22px 0 0; padding:10px 18px calc(20px + env(safe-area-inset-bottom)); max-height:86dvh; overflow-y:auto;}
   .sheet.show{transform:translateY(0);}
   .grip{width:38px; height:4px; border-radius:4px; background:rgba(255,255,255,.18); margin:6px auto 14px;}
   .sect{font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin:16px 2px 8px;}
   .chips{display:flex; flex-wrap:wrap; gap:8px;}
-  .chip{padding:10px 14px; border-radius:13px; background:var(--glass); border:1px solid var(--line); color:var(--ink); font-size:13px; cursor:pointer; transition:all .15s; line-height:1.25;}
+  .chip{padding:10px 14px; border-radius:13px; background:var(--glass); border:1px solid var(--line); color:var(--ink); font-size:13px; cursor:pointer; transition:all .15s; line-height:1.25; text-align:center;}
   .chip small{display:block; font-size:9.5px; color:var(--gold-soft); margin-top:2px; opacity:.85;}
   .chip.active{background:linear-gradient(180deg,rgba(201,163,90,.22),rgba(201,163,90,.08)); border-color:var(--gold); color:#fff;}
-  .chip.active small{color:var(--gold-soft);}
   .chip:active{transform:scale(.96);}
-  .ver small{color:var(--muted);}
   .act{display:flex; gap:10px; margin-top:8px;}
-  .act .chip{flex:1; text-align:center;}
+  .act .chip{flex:1;}
   .src{margin-top:18px; border-top:1px solid var(--line); padding-top:14px;}
-  .src h4{margin:0 0 8px; font-size:11px; color:var(--gold); letter-spacing:1px; font-weight:600;}
   .src p{margin:0 0 8px; font-size:11.5px; color:var(--muted); line-height:1.6;}
   .src p b{color:var(--ink); font-weight:500;}
   .src .warn{color:#caa86a; font-size:10.5px; font-style:italic;}
 
-  .toast{position:fixed; left:50%; top:14%; transform:translateX(-50%) translateY(-16px); background:rgba(20,28,24,.96); border:1px solid var(--gold); color:var(--gold-soft); padding:11px 22px; border-radius:30px; font-weight:400; font-size:14px; letter-spacing:.5px; opacity:0; pointer-events:none; transition:all .3s; box-shadow:0 12px 34px rgba(0,0,0,.5); z-index:60;}
+  .toast{position:fixed; left:50%; top:14%; transform:translateX(-50%) translateY(-16px); background:rgba(20,28,24,.96); border:1px solid var(--gold); color:var(--gold-soft); padding:11px 22px; border-radius:30px; font-size:14px; letter-spacing:.5px; opacity:0; pointer-events:none; transition:all .3s; box-shadow:0 12px 34px rgba(0,0,0,.5); z-index:60;}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
 
+<!-- ============ HOME ============ -->
+<div class="view active" id="home">
+  <div class="hero">
+    <div class="sym">۞</div>
+    <h1>HAVAS ZİKİR</h1>
+    <p>tevhid · istiğfar · esmâ-ül hüsnâ · korunma</p>
+  </div>
+  <div class="cards">
+    <div id="resumeWrap"></div>
+    <div class="card" data-cat="istigfar">
+      <div class="ic">✦</div>
+      <div class="tx"><b>İstiğfar</b><span>Estağfurullah · ebced zikri</span></div>
+      <div class="ar">‹</div>
+    </div>
+    <div class="card" data-cat="esma">
+      <div class="ic">۹۹</div>
+      <div class="tx"><b>Esmâ-ül Hüsnâ</b><span>99 ism-i şerîf · her birinin ebced adedi</span></div>
+      <div class="ar">‹</div>
+    </div>
+    <div class="card accent" data-cat="korunma">
+      <div class="ic">🜂</div>
+      <div class="tx"><b>Korunma · Cin Def'i</b><span>Ruqye tertîbi, Âyetü'l-Kürsî, Muavvizeteyn ve havâs esmâları</span></div>
+      <div class="ar">‹</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LIST ============ -->
+<div class="view" id="listView">
+  <div class="nav">
+    <div class="back" id="listBack">‹</div>
+    <div><h1 id="listTitle">Esmâlar</h1><div class="sub" id="listSub"></div></div>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+
+<!-- ============ COUNTER ============ -->
+<div class="view" id="counter">
+  <div class="nav">
+    <div class="back" id="cBack">‹</div>
+    <div><h1 id="cTitle"></h1></div>
+  </div>
   <div class="top">
     <div class="arabic" id="arabic"></div>
     <div class="latin" id="latin"></div>
     <div class="meaning" id="meaning"></div>
   </div>
-
   <div class="stage" id="stage">
     <div class="breath"></div>
     <div class="dial">
-      <svg class="ring" viewBox="0 0 100 100">
-        <circle class="bg" cx="50" cy="50" r="47"/>
-        <circle class="fg" id="ringFg" cx="50" cy="50" r="47"/>
-      </svg>
-      <div class="num">
-        <div class="count" id="count">0</div>
-        <div class="of" id="ofLbl">/ 70</div>
-      </div>
+      <svg class="ring" viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="47"/><circle class="fg" id="ringFg" cx="50" cy="50" r="47"/></svg>
+      <div style="text-align:center"><div class="count" id="count">0</div><div class="of" id="ofLbl"></div></div>
     </div>
     <div class="note" id="note"></div>
   </div>
-
-  <div class="meta">Bugün <b id="sToday">0</b> · Tur <b id="sRound">0</b> · Toplam <b id="sTotal">0</b></div>
-
+  <div class="meta">Bugün <b id="sToday">0</b> · Tur <b id="sRound">0</b> · Bu zikir <b id="sItem">0</b> · Toplam <b id="sTotal">0</b></div>
   <div class="bar">
-    <div class="bbtn" id="undo" title="Geri al">↩</div>
-    <div class="bsel" id="openSheet">
-      <span class="v" id="selVer">Kısa</span>
-      <span class="h" id="selTar">hedef 70</span>
-    </div>
-    <div class="bbtn" id="openInfo" title="Ayar / kaynak">☰</div>
+    <div class="bbtn" id="undo">↩</div>
+    <div class="bsel" id="openSheet"><span class="v" id="selName"></span><span class="h" id="selTar"></span></div>
+    <div class="bbtn" id="openInfo">☰</div>
   </div>
+</div>
 
-  <!-- Sheet -->
-  <div class="scrim" id="scrim"></div>
-  <div class="sheet" id="sheet">
-    <div class="grip"></div>
-
-    <div class="sect">Versiyon</div>
-    <div class="chips" id="verRow"></div>
-
-    <div class="sect">Hedef adedi</div>
-    <div class="chips" id="tarRow"></div>
-
-    <div class="sect">Sayaç</div>
-    <div class="act">
-      <div class="chip" id="editBtn">✎ Sayıyı düzelt</div>
-      <div class="chip" id="resetVer">↺ Bu versiyon</div>
-      <div class="chip" id="resetAll">⨯ Her şey</div>
-    </div>
-
-    <div class="src">
-      <h4>۞ Adetler ve sahih kaynaklar</h4>
-      <p><b>Sünnet (sahih hadis):</b><br>
-         • Günde <b>70</b> kez — “Vallahi ben günde yetmiş defadan fazla Allah'a istiğfar ederim.” (Buhârî, Daavât 3)<br>
-         • Günde <b>100</b> kez — Hz. Peygamber günde yüz defa istiğfar ederdi. (Müslim, Zikir 41)<br>
-         • Namaz sonu <b>×3</b> — selâmdan sonra üç kez “Estağfirullah”. (Müslim, Mesâcid 135)<br>
-         • <b>33</b> — namaz sonrası tesbihat geleneği.</p>
-      <p><b>Tasavvuf:</b> İstiğfar, Kadirî yolunun (Abdülkàdir Geylânî) ve genel tarîkat virdlerinin esasıdır; çoğu yolda günlük <b>100</b> istiğfar derse konur.</p>
-      <p><b>Ebced (havâs–cifr geleneği):</b><br>
-         • <b>66</b> — “Allah” (الله) lafzının ebced değeri.<br>
-         • <b>1807</b> — “أستغفر الله” ifadesinin ebced-i kebîr değeri.<br>
-         <span class="warn">Not: Ebced/cifr adetleri tasavvuf-havâs geleneğine aittir; sünnetle sabit (hadis hükmünde) değildir.</span></p>
-    </div>
+<!-- ============ SHEET ============ -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="grip"></div>
+  <div class="sect">Hedef adedi</div>
+  <div class="chips" id="tarRow"></div>
+  <div class="sect">Sayaç</div>
+  <div class="act">
+    <div class="chip" id="editBtn">✎ Düzelt</div>
+    <div class="chip" id="resetItem">↺ Bu zikir</div>
+    <div class="chip" id="resetAll">⨯ Her şey</div>
   </div>
+  <div class="src" id="srcBox"></div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div>
 
 <script>
 "use strict";
 
-const DHIKRS = [
-  { key:"kisa", short:"Kısa",
-    arabic:"أَسْتَغْفِرُ ٱللّٰهَ",
-    latin:"Estağfirullâh",
-    meaning:"«Allah'tan bağışlanma dilerim.»" },
-  { key:"orta", short:"Orta",
-    arabic:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ",
-    latin:"Estağfirullâhe'l-azîm",
-    meaning:"«Yüce Allah'tan bağışlanma dilerim.»" },
-  { key:"uzun", short:"Uzun",
-    arabic:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ ٱلَّذِي لَا إِلٰهَ إِلَّا هُوَ ٱلْحَيَّ ٱلْقَيُّومَ وَأَتُوبُ إِلَيْهِ",
-    latin:"Estağfirullâhe'l-azîme'llezî lâ ilâhe illâ hüve'l-hayye'l-kayyûme ve etûbü ileyh",
-    meaning:"«Kendisinden başka ilah olmayan, Hayy ve Kayyûm olan Yüce Allah'tan bağışlanma diler, O'na tevbe ederim.»" }
+/* =========================================================
+   VERİ
+========================================================= */
+const ISTIGFAR = [
+  {id:"kisa", l:"Kısa", a:"أَسْتَغْفِرُ ٱللّٰهَ", say:"Estağfirullâh",
+   m:"«Allah'tan bağışlanma dilerim.»"},
+  {id:"orta", l:"Orta", a:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ", say:"Estağfirullâhe'l-azîm",
+   m:"«Yüce Allah'tan bağışlanma dilerim.»"},
+  {id:"uzun", l:"Uzun", a:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ ٱلَّذِي لَا إِلٰهَ إِلَّا هُوَ ٱلْحَيَّ ٱلْقَيُّومَ وَأَتُوبُ إِلَيْهِ",
+   say:"Estağfirullâhe'l-azîme'llezî lâ ilâhe illâ hüve'l-hayye'l-kayyûme ve etûbü ileyh",
+   m:"«Kendisinden başka ilah olmayan, Hayy ve Kayyûm olan Yüce Allah'tan bağışlanma diler, O'na tevbe ederim.»"}
 ];
 
-/* hedefler — kaynak notlu */
-const TARGETS = [
-  {n:3,    grp:"Sünnet", note:"Namaz sonu ×3 (Müslim)"},
-  {n:33,   grp:"Tesbih", note:"Namaz sonrası tesbihat (33)"},
-  {n:70,   grp:"Sünnet", note:"Günde 70 — Hz. Peygamber (Buhârî, Daavât 3)"},
-  {n:100,  grp:"Sünnet", note:"Günde 100 (Müslim, Zikir 41)"},
-  {n:66,   grp:"Ebced",  note:"Ebced: «Allah» = 66 (havâs geleneği)"},
-  {n:1807, grp:"Ebced",  note:"Ebced: «أستغفر الله» = 1807 (havâs geleneği)"},
-  {n:0,    grp:"Serbest",note:"Sınırsız"}
+/* a:Arapça(isim)  l:latin  e:ebced(=havas zikir adedi)  m:anlam */
+const ESMA = [
+ {a:"اللّٰه",l:"Allah",e:66,m:"ulûhiyete mahsus özel isim"},
+ {a:"ٱلرَّحْمٰن",l:"er-Rahmân",e:298,m:"dünyada bütün canlılara merhamet eden"},
+ {a:"ٱلرَّحِيم",l:"er-Rahîm",e:258,m:"âhirette müminlere merhamet eden"},
+ {a:"ٱلْمَلِك",l:"el-Melik",e:90,m:"mülkün gerçek sahibi"},
+ {a:"ٱلْقُدُّوس",l:"el-Kuddûs",e:170,m:"her türlü eksiklikten münezzeh"},
+ {a:"ٱلسَّلَام",l:"es-Selâm",e:131,m:"esenlik veren, kusurdan sâlim"},
+ {a:"ٱلْمُؤْمِن",l:"el-Mü'min",e:137,m:"güven veren, iman nasip eden"},
+ {a:"ٱلْمُهَيْمِن",l:"el-Müheymin",e:145,m:"koruyup gözeten"},
+ {a:"ٱلْعَزِيز",l:"el-Azîz",e:94,m:"yenilmeyen, izzet sahibi"},
+ {a:"ٱلْجَبَّار",l:"el-Cebbâr",e:206,m:"iradesini her şeye geçiren, onaran"},
+ {a:"ٱلْمُتَكَبِّر",l:"el-Mütekebbir",e:662,m:"büyüklükte tek olan"},
+ {a:"ٱلْخَالِق",l:"el-Hâlık",e:731,m:"yoktan yaratan"},
+ {a:"ٱلْبَارِئ",l:"el-Bârî",e:214,m:"kusursuz var eden"},
+ {a:"ٱلْمُصَوِّر",l:"el-Musavvir",e:336,m:"şekil ve suret veren"},
+ {a:"ٱلْغَفَّار",l:"el-Gaffâr",e:1281,m:"günahları çokça bağışlayan"},
+ {a:"ٱلْقَهَّار",l:"el-Kahhâr",e:306,m:"her şeye gücü yeten, kahreden"},
+ {a:"ٱلْوَهَّاب",l:"el-Vehhâb",e:14,m:"karşılıksız çokça veren"},
+ {a:"ٱلرَّزَّاق",l:"er-Rezzâk",e:308,m:"rızık veren"},
+ {a:"ٱلْفَتَّاح",l:"el-Fettâh",e:489,m:"hayır kapılarını açan"},
+ {a:"ٱلْعَلِيم",l:"el-Alîm",e:150,m:"her şeyi bilen"},
+ {a:"ٱلْقَابِض",l:"el-Kâbıd",e:903,m:"daraltan, ruhları alan"},
+ {a:"ٱلْبَاسِط",l:"el-Bâsıt",e:72,m:"genişleten, ferahlık veren"},
+ {a:"ٱلْخَافِض",l:"el-Hâfıd",e:1481,m:"alçaltan"},
+ {a:"ٱلرَّافِع",l:"er-Râfi'",e:351,m:"yücelten"},
+ {a:"ٱلْمُعِزّ",l:"el-Muizz",e:117,m:"izzet ve şeref veren"},
+ {a:"ٱلْمُذِلّ",l:"el-Müzill",e:770,m:"zillete düşüren"},
+ {a:"ٱلسَّمِيع",l:"es-Semî'",e:180,m:"her şeyi işiten"},
+ {a:"ٱلْبَصِير",l:"el-Basîr",e:302,m:"her şeyi gören"},
+ {a:"ٱلْحَكَم",l:"el-Hakem",e:68,m:"hükmeden, son hükmü veren"},
+ {a:"ٱلْعَدْل",l:"el-Adl",e:104,m:"mutlak adaletli"},
+ {a:"ٱللَّطِيف",l:"el-Latîf",e:129,m:"lütufkâr, en ince işleri bilen"},
+ {a:"ٱلْخَبِير",l:"el-Habîr",e:812,m:"her şeyden haberdar"},
+ {a:"ٱلْحَلِيم",l:"el-Halîm",e:88,m:"cezada acele etmeyen"},
+ {a:"ٱلْعَظِيم",l:"el-Azîm",e:1020,m:"pek azametli"},
+ {a:"ٱلْغَفُور",l:"el-Gafûr",e:1286,m:"çok bağışlayan"},
+ {a:"ٱلشَّكُور",l:"eş-Şekûr",e:526,m:"az amele çok mükâfat veren"},
+ {a:"ٱلْعَلِيّ",l:"el-Aliyy",e:110,m:"pek yüce"},
+ {a:"ٱلْكَبِير",l:"el-Kebîr",e:232,m:"pek büyük"},
+ {a:"ٱلْحَفِيظ",l:"el-Hafîz",e:998,m:"koruyan, muhafaza eden"},
+ {a:"ٱلْمُقِيت",l:"el-Mukît",e:550,m:"rızık ve kuvvet veren"},
+ {a:"ٱلْحَسِيب",l:"el-Hasîb",e:80,m:"hesaba çeken, kâfî gelen"},
+ {a:"ٱلْجَلِيل",l:"el-Celîl",e:73,m:"celâl ve azamet sahibi"},
+ {a:"ٱلْكَرِيم",l:"el-Kerîm",e:270,m:"pek cömert, ikram sahibi"},
+ {a:"ٱلرَّقِيب",l:"er-Rakîb",e:312,m:"her şeyi gözetleyen"},
+ {a:"ٱلْمُجِيب",l:"el-Mucîb",e:55,m:"dualara icabet eden"},
+ {a:"ٱلْوَاسِع",l:"el-Vâsi'",e:137,m:"ilmi ve rahmeti geniş"},
+ {a:"ٱلْحَكِيم",l:"el-Hakîm",e:78,m:"her işi hikmetli"},
+ {a:"ٱلْوَدُود",l:"el-Vedûd",e:20,m:"çok seven, çok sevilen"},
+ {a:"ٱلْمَجِيد",l:"el-Mecîd",e:57,m:"şanı yüce, kadri büyük"},
+ {a:"ٱلْبَاعِث",l:"el-Bâis",e:573,m:"ölüleri dirilten"},
+ {a:"ٱلشَّهِيد",l:"eş-Şehîd",e:319,m:"her şeye şahit"},
+ {a:"ٱلْحَقّ",l:"el-Hakk",e:108,m:"varlığı değişmeyen gerçek"},
+ {a:"ٱلْوَكِيل",l:"el-Vekîl",e:66,m:"işleri kendisine bırakılan"},
+ {a:"ٱلْقَوِيّ",l:"el-Kaviyy",e:116,m:"pek güçlü"},
+ {a:"ٱلْمَتِين",l:"el-Metîn",e:500,m:"çok sağlam, dayanıklı"},
+ {a:"ٱلْوَلِيّ",l:"el-Veliyy",e:46,m:"dost, yardımcı"},
+ {a:"ٱلْحَمِيد",l:"el-Hamîd",e:62,m:"övgüye lâyık"},
+ {a:"ٱلْمُحْصِي",l:"el-Muhsî",e:148,m:"her şeyi tek tek bilip sayan"},
+ {a:"ٱلْمُبْدِئ",l:"el-Mübdi'",e:56,m:"ilk defa yaratan"},
+ {a:"ٱلْمُعِيد",l:"el-Muîd",e:124,m:"yeniden yaratan"},
+ {a:"ٱلْمُحْيِي",l:"el-Muhyî",e:68,m:"can veren, dirilten"},
+ {a:"ٱلْمُمِيت",l:"el-Mümît",e:490,m:"ölümü yaratan"},
+ {a:"ٱلْحَيّ",l:"el-Hayy",e:18,m:"daima diri olan"},
+ {a:"ٱلْقَيُّوم",l:"el-Kayyûm",e:156,m:"her şeyi ayakta tutan"},
+ {a:"ٱلْوَاجِد",l:"el-Vâcid",e:14,m:"istediğini bulan, zengin"},
+ {a:"ٱلْمَاجِد",l:"el-Mâcid",e:48,m:"şanı büyük, cömert"},
+ {a:"ٱلْوَاحِد",l:"el-Vâhid",e:19,m:"tek olan"},
+ {a:"ٱلْأَحَد",l:"el-Ehad",e:13,m:"eşi benzeri olmayan tek"},
+ {a:"ٱلصَّمَد",l:"es-Samed",e:134,m:"hiçbir şeye muhtaç olmayan"},
+ {a:"ٱلْقَادِر",l:"el-Kâdir",e:305,m:"istediğini yapmaya gücü yeten"},
+ {a:"ٱلْمُقْتَدِر",l:"el-Muktedir",e:744,m:"kuvvet ve kudret sahibi"},
+ {a:"ٱلْمُقَدِّم",l:"el-Mukaddim",e:184,m:"dilediğini öne alan"},
+ {a:"ٱلْمُؤَخِّر",l:"el-Muahhir",e:847,m:"dilediğini geriye bırakan"},
+ {a:"ٱلْأَوَّل",l:"el-Evvel",e:37,m:"başlangıcı olmayan ilk"},
+ {a:"ٱلْآخِر",l:"el-Âhir",e:801,m:"sonu olmayan son"},
+ {a:"ٱلظَّاهِر",l:"ez-Zâhir",e:1106,m:"varlığı âşikâr"},
+ {a:"ٱلْبَاطِن",l:"el-Bâtın",e:62,m:"gizli, künhü bilinmeyen"},
+ {a:"ٱلْوَالِي",l:"el-Vâlî",e:47,m:"kâinatı yöneten"},
+ {a:"ٱلْمُتَعَالِي",l:"el-Müteâlî",e:551,m:"yüceler yücesi"},
+ {a:"ٱلْبَرّ",l:"el-Berr",e:202,m:"iyilik ve ihsanı bol"},
+ {a:"ٱلتَّوَّاب",l:"et-Tevvâb",e:409,m:"tevbeleri kabul eden"},
+ {a:"ٱلْمُنْتَقِم",l:"el-Müntekim",e:630,m:"suçluları adâletle cezalandıran"},
+ {a:"ٱلْعَفُوّ",l:"el-Afüvv",e:156,m:"affı çok olan"},
+ {a:"ٱلرَّؤُوف",l:"er-Raûf",e:287,m:"çok şefkatli"},
+ {a:"مَالِكُ ٱلْمُلْك",l:"Mâlikü'l-Mülk",e:212,m:"mülkün ebedî sahibi"},
+ {a:"ذُو ٱلْجَلَالِ وَٱلْإِكْرَام",l:"Zü'l-Celâli ve'l-İkrâm",e:1100,m:"azamet ve ikram sahibi"},
+ {a:"ٱلْمُقْسِط",l:"el-Muksit",e:209,m:"adâletle hükmeden"},
+ {a:"ٱلْجَامِع",l:"el-Câmi'",e:114,m:"toplayan, bir araya getiren"},
+ {a:"ٱلْغَنِيّ",l:"el-Ganiyy",e:1060,m:"hiçbir şeye muhtaç olmayan"},
+ {a:"ٱلْمُغْنِي",l:"el-Mugnî",e:1100,m:"zengin eden, yeten"},
+ {a:"ٱلْمَانِع",l:"el-Mâni'",e:161,m:"kötülükleri engelleyen"},
+ {a:"ٱلضَّارّ",l:"ed-Dârr",e:1001,m:"elem verenleri yaratan"},
+ {a:"ٱلنَّافِع",l:"en-Nâfi'",e:201,m:"fayda verenleri yaratan"},
+ {a:"ٱلنُّور",l:"en-Nûr",e:256,m:"âlemleri nurlandıran"},
+ {a:"ٱلْهَادِي",l:"el-Hâdî",e:20,m:"hidayet veren"},
+ {a:"ٱلْبَدِيع",l:"el-Bedî'",e:86,m:"örneksiz yaratan"},
+ {a:"ٱلْبَاقِي",l:"el-Bâkî",e:113,m:"varlığı sürekli olan"},
+ {a:"ٱلْوَارِث",l:"el-Vâris",e:707,m:"her şeyin gerçek sahibi"},
+ {a:"ٱلرَّشِيد",l:"er-Reşîd",e:514,m:"doğru yolu gösteren"},
+ {a:"ٱلصَّبُور",l:"es-Sabûr",e:298,m:"çok sabırlı olan"}
 ];
-function tarOf(n){ return TARGETS.find(t=>t.n===n) || {n, note:"Özel hedef ("+n+")"}; }
 
-/* ---- State: her versiyon kendi sayısını tutar ---- */
-const LS="estagfurullah_v3";
+const KORUNMA = [
+ {id:"ruqye", l:"Ruqye Tertîbi (kovma)", say:"Kendi üzerine sırayla oku, ellerine üfleyip vücuduna sür",
+  a:"بِسْمِ ٱللّٰهِ ٱلرَّحْمٰنِ ٱلرَّحِيمِ",
+  m:"En sağlam yol budur: abdestli, kıbleye dönük, Kur'ân'ı kendi üzerine oku ve üfle. Sıra: 1) Fâtiha 2) Âyetü'l-Kürsî 3) Âmenerrasûl (Bakara 285-286) 4) A'râf 54-56 5) Saffât 1-10 6) Cin 1-3 7) Haşr 21-24 8) İhlâs-Felak-Nâs (3'er). Her bölümü 3 veya 7 kez; sürekli ve içten. 7-40 gün düzenli tekrarla. Kuvveti samimiyet, süreklilik ve tevekküldedir — sihirli bir sayıda değil. Sonucu veren Allah'tır.",
+  targets:[{n:1},{n:3},{n:7}], defT:3},
+ {id:"fatiha", l:"Fâtiha (şifâ)", say:"Bismillâhi'r-rahmâni'r-rahîm…",
+  a:"بِسْمِ ٱللّٰهِ ٱلرَّحْمٰنِ ٱلرَّحِيمِ ۝ ٱلْحَمْدُ لِلّٰهِ رَبِّ ٱلْعَالَمِينَ ۝ ٱلرَّحْمٰنِ ٱلرَّحِيمِ ۝ مَالِكِ يَوْمِ ٱلدِّينِ ۝ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ۝ ٱهْدِنَا ٱلصِّرَاطَ ٱلْمُسْتَقِيمَ ۝ صِرَاطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّالِّينَ",
+  m:"Rukyenin temeli. Sahâbe Fâtiha okuyarak rukye yapmış ve şifâ bulmuştur (Buhârî).",
+  targets:[{n:1},{n:3},{n:7}], defT:7},
+ {id:"amenerrasul", l:"Âmenerrasûl (Bakara 285-286)", say:"Âmene'r-rasûlü bimâ ünzile ileyhi…",
+  a:"آمَنَ ٱلرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَٱلْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِٱللّٰهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِنْ رُسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ ٱلْمَصِيرُ ۝ لَا يُكَلِّفُ ٱللّٰهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا ٱكْتَسَبَتْ ۗ رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى ٱلَّذِينَ مِنْ قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَٱعْفُ عَنَّا وَٱغْفِرْ لَنَا وَٱرْحَمْنَا ۚ أَنْتَ مَوْلَانَا فَٱنْصُرْنَا عَلَى ٱلْقَوْمِ ٱلْكَافِرِينَ",
+  m:"Bakara'nın son iki âyeti. «Kim geceleyin bu iki âyeti okursa ona yeter, korur.» (Buhârî, Müslim).",
+  targets:[{n:1},{n:3},{n:7}], defT:3},
+ {id:"saffat", l:"Saffât 1-10", say:"Ves-sâffâti saffâ…",
+  a:"وَٱلصَّافَّاتِ صَفًّا ۝ فَٱلزَّاجِرَاتِ زَجْرًا ۝ فَٱلتَّالِيَاتِ ذِكْرًا ۝ إِنَّ إِلٰهَكُمْ لَوَاحِدٌ ۝ رَبُّ ٱلسَّمَاوَاتِ وَٱلْأَرْضِ وَمَا بَيْنَهُمَا وَرَبُّ ٱلْمَشَارِقِ ۝ إِنَّا زَيَّنَّا ٱلسَّمَاءَ ٱلدُّنْيَا بِزِينَةٍ ٱلْكَوَاكِبِ ۝ وَحِفْظًا مِنْ كُلِّ شَيْطَانٍ مَارِدٍ ۝ لَا يَسَّمَّعُونَ إِلَى ٱلْمَلَإِ ٱلْأَعْلَىٰ وَيُقْذَفُونَ مِنْ كُلِّ جَانِبٍ ۝ دُحُورًا وَلَهُمْ عَذَابٌ وَاصِبٌ ۝ إِلَّا مَنْ خَطِفَ ٱلْخَطْفَةَ فَأَتْبَعَهُ شِهَابٌ ثَاقِبٌ",
+  m:"Şeytanların semâdan kovuluşunu anlatan âyetler; rukye geleneğinde korunma için okunur.",
+  targets:[{n:1},{n:3},{n:7}], defT:7},
+ {id:"cin", l:"Cin Sûresi 1-3", say:"Kul ûhiye ileyye…",
+  a:"قُلْ أُوحِيَ إِلَيَّ أَنَّهُ ٱسْتَمَعَ نَفَرٌ مِنَ ٱلْجِنِّ فَقَالُوا إِنَّا سَمِعْنَا قُرْآنًا عَجَبًا ۝ يَهْدِي إِلَى ٱلرُّشْدِ فَآمَنَّا بِهِ ۖ وَلَنْ نُشْرِكَ بِرَبِّنَا أَحَدًا ۝ وَأَنَّهُ تَعَالَىٰ جَدُّ رَبِّنَا مَا ٱتَّخَذَ صَاحِبَةً وَلَا وَلَدًا",
+  m:"Cin sûresinin başı; rukye tertîbinde okunur.",
+  targets:[{n:1},{n:3},{n:7}], defT:3},
+ {id:"hasr", l:"Haşr 21-24", say:"Lev enzelnâ hâze'l-Kur'âne…",
+  a:"لَوْ أَنْزَلْنَا هٰذَا ٱلْقُرْآنَ عَلَىٰ جَبَلٍ لَرَأَيْتَهُ خَاشِعًا مُتَصَدِّعًا مِنْ خَشْيَةِ ٱللّٰهِ ۚ وَتِلْكَ ٱلْأَمْثَالُ نَضْرِبُهَا لِلنَّاسِ لَعَلَّهُمْ يَتَفَكَّرُونَ ۝ هُوَ ٱللّٰهُ ٱلَّذِي لَا إِلٰهَ إِلَّا هُوَ ۖ عَالِمُ ٱلْغَيْبِ وَٱلشَّهَادَةِ ۖ هُوَ ٱلرَّحْمٰنُ ٱلرَّحِيمُ ۝ هُوَ ٱللّٰهُ ٱلَّذِي لَا إِلٰهَ إِلَّا هُوَ ٱلْمَلِكُ ٱلْقُدُّوسُ ٱلسَّلَامُ ٱلْمُؤْمِنُ ٱلْمُهَيْمِنُ ٱلْعَزِيزُ ٱلْجَبَّارُ ٱلْمُتَكَبِّرُ ۚ سُبْحَانَ ٱللّٰهِ عَمَّا يُشْرِكُونَ ۝ هُوَ ٱللّٰهُ ٱلْخَالِقُ ٱلْبَارِئُ ٱلْمُصَوِّرُ ۖ لَهُ ٱلْأَسْمَاءُ ٱلْحُسْنَىٰ ۚ يُسَبِّحُ لَهُ مَا فِي ٱلسَّمَاوَاتِ وَٱلْأَرْضِ ۖ وَهُوَ ٱلْعَزِيزُ ٱلْحَكِيمُ",
+  m:"Haşr sûresinin sonu; Allah'ın azamet ve esmâsıyla biten, korunmada okunan âyetler.",
+  targets:[{n:1},{n:3},{n:7}], defT:3},
+ {id:"euzu", l:"Eûzü bi-kelimâtillâh", say:"Eûzü bi-kelimâtillâhi't-tâmmâti min şerri mâ halak",
+  a:"أَعُوذُ بِكَلِمَاتِ ٱللّٰهِ ٱلتَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+  m:"«Allah'ın eksiksiz kelimelerine, yarattıklarının şerrinden sığınırım.» — Sahih (Müslim). “Bir yere konaklayıp bunu okuyana oradan ayrılana dek hiçbir şey zarar veremez.”",
+  targets:[{n:3},{n:7},{n:100}], defT:7},
+ {id:"euzu2", l:"Eûzü (şeytan/cin)", say:"Eûzü bi-kelimâtillâhi't-tâmmeh, min külli şeytânin ve hâmmeh, ve min külli aynin lâmmeh",
+  a:"أَعُوذُ بِكَلِمَاتِ ٱللّٰهِ ٱلتَّامَّةِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ",
+  m:"«Her şeytandan, her zararlıdan ve her kem gözden Allah'ın tam kelimelerine sığınırım.» — Hz. Peygamber'in koruma duâsı.",
+  targets:[{n:3},{n:7}], defT:3},
+ {id:"kursi", l:"Âyetü'l-Kürsî", say:"Allâhü lâ ilâhe illâ hüve'l-hayyü'l-kayyûm…",
+  a:"ٱللّٰهُ لَا إِلٰهَ إِلَّا هُوَ ٱلْحَيُّ ٱلْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي ٱلسَّمَاوَاتِ وَمَا فِي ٱلْأَرْضِ ۗ مَنْ ذَا ٱلَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ ٱلسَّمَاوَاتِ وَٱلْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ ٱلْعَلِيُّ ٱلْعَظِيمُ",
+  m:"Bakara 255. «Geceleri okuyan kişiyi sabaha kadar Allah'tan bir koruyucu korur, şeytan ona yaklaşamaz.» (Buhârî). Her namaz sonu ve uyumadan önce okunması tavsiye edilir.",
+  targets:[{n:1},{n:7},{n:21}], defT:7},
+ {id:"felak", l:"Felak Sûresi", say:"Kul eûzü bi-rabbi'l-felak…",
+  a:"قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ ٱلنَّفَّاثَاتِ فِي ٱلْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+  m:"Yaratılmışların, büyücülerin ve hasetçinin şerrinden Rabbe sığınma. Nâs ile birlikte sabah-akşam 3'er okunur.",
+  targets:[{n:3},{n:7},{n:41}], defT:3},
+ {id:"nas", l:"Nâs Sûresi", say:"Kul eûzü bi-rabbi'n-nâs…",
+  a:"قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ ۝ مَلِكِ ٱلنَّاسِ ۝ إِلٰهِ ٱلنَّاسِ ۝ مِنْ شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ ۝ ٱلَّذِي يُوَسْوِسُ فِي صُدُورِ ٱلنَّاسِ ۝ مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ",
+  m:"Sinsi vesvesecinin (cin ve insan) şerrinden insanların Rabbine sığınma. Cin vesvesesine karşı en husûsî sûredir.",
+  targets:[{n:3},{n:7},{n:41}], defT:3},
+ {id:"ihlas", l:"İhlâs Sûresi", say:"Kul hüvellâhü ahad…",
+  a:"قُلْ هُوَ ٱللّٰهُ أَحَدٌ ۝ ٱللّٰهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
+  m:"Tevhidin özü. Muavvizeteyn ile birlikte korunma için okunur.",
+  targets:[{n:3},{n:11},{n:100}], defT:3},
+ {id:"havkale", l:"Havkale", say:"Lâ havle velâ kuvvete illâ billâh",
+  a:"لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللّٰهِ",
+  m:"«Güç ve kuvvet ancak Allah'tandır.» Sıkıntı ve vesvese anında dayanak.",
+  targets:[{n:33},{n:100},{n:313}], defT:100},
+ {id:"kahhar", l:"Yâ Kahhâr", say:"Yâ Kahhâr", a:"يَا قَهَّار",
+  m:"Kahhâr ism-i şerîfi — musallat eden şer odaklarını kahretmesi niyetiyle. Ebced 306.",
+  targets:[{n:99},{n:306,note:"ebced ★"},{n:313}], defT:306},
+ {id:"muntekim", l:"Yâ Müntekim", say:"Yâ Müntekim", a:"يَا مُنْتَقِم",
+  m:"Müntekim ism-i şerîfi — zulmeden gizli varlıklardan korunma niyetiyle (havâs). Ebced 630.",
+  targets:[{n:630,note:"ebced ★"}], defT:630},
+ {id:"hafiz", l:"Yâ Hâfız", say:"Yâ Hâfız", a:"يَا حَفِيظ",
+  m:"Hâfız ism-i şerîfi — koruyup muhafaza etmesi niyetiyle. Ebced 998.",
+  targets:[{n:99},{n:998,note:"ebced ★"}], defT:998},
+ {id:"mani", l:"Yâ Mâni'", say:"Yâ Mâni'", a:"يَا مَانِع",
+  m:"Mâni' ism-i şerîfi — gelecek zararları engellemesi niyetiyle. Ebced 161.",
+  targets:[{n:99},{n:161,note:"ebced ★"}], defT:161}
+];
+
+/* ---- kayıtları birleştir ---- */
+const ITEMS = {};
+ISTIGFAR.forEach(x=>ITEMS[x.id]={...x, cat:"istigfar", latin:x.say});
+ESMA.forEach((x,i)=>{ const id="esma_"+i; ITEMS[id]={...x, id, cat:"esma", latin:"Yâ "+x.l.replace(/^e[lsrnştz]-|^Ze'l|^Mâlik.*|^Zü.*/,"")||x.l}; });
+KORUNMA.forEach(x=>ITEMS[x.id]={...x, cat:"korunma", latin:x.say});
+
+/* hedef listesi (kategoriye göre) */
+function targetsFor(it){
+  if(it.cat==="istigfar") return [
+    {n:66,g:"Ebced",note:"«Allah» = 66"},
+    {n:1807,g:"Ebced",note:"«أستغفر الله» = 1807"},
+    {n:0,g:"Serbest",note:"sınırsız"}];
+  if(it.cat==="esma") return [
+    {n:1,g:"Az"},{n:3,g:"Az"},{n:7,g:"Az"},{n:19,g:"Az"},{n:33,g:"Az"},{n:99,g:"Az"},
+    {n:it.e,g:"Ebced",note:"ebced ★"},{n:313,g:"Çok"},{n:1001,g:"Çok"},
+    {n:0,g:"Serbest",note:"sınırsız"}];
+  // korunma
+  return [...(it.targets||[]), {n:0,g:"Serbest",note:"sınırsız"}];
+}
+function defTarget(it){
+  if(it.cat==="istigfar") return 66;
+  if(it.cat==="esma") return it.e;
+  return it.defT||7;
+}
+function noteFor(it,n){
+  const t=targetsFor(it).find(t=>t.n===n);
+  if(n===0) return "sınırsız";
+  if(t&&t.note) return t.note;
+  if(it.cat==="esma" && n===it.e) return "ebced ★";
+  return "hedef "+n;
+}
+
+/* =========================================================
+   DURUM
+========================================================= */
+const LS="havas_zikir_v1";
 function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
-function freshPer(){ const o={}; DHIKRS.forEach(d=>o[d.key]={count:0,round:0,total:0}); return o; }
-const def={ dhikr:0, target:70, per:freshPer(), today:0, total:0, day:todayKey() };
-
+const def={ per:{}, tgt:{}, today:0, total:0, day:todayKey(), last:null };
 let S=load();
 function load(){
   try{
     const raw=localStorage.getItem(LS);
-    if(!raw) return migrate();
-    const s={...def,...JSON.parse(raw)};
-    s.per={...freshPer(),...(s.per||{})};
-    DHIKRS.forEach(d=>{ s.per[d.key]={count:0,round:0,total:0,...(s.per[d.key]||{})}; });
+    let s = raw ? {...def, ...JSON.parse(raw)} : migrate();
+    s.per=s.per||{}; s.tgt=s.tgt||{};
     if(s.day!==todayKey()){ s.day=todayKey(); s.today=0; }
     return s;
-  }catch(e){ return {...def, per:freshPer()}; }
+  }catch(e){ return {...def}; }
 }
 function migrate(){
-  for(const old of ["estagfurullah_v2","estagfurullah_v1"]){
-    try{
-      const o=JSON.parse(localStorage.getItem(old)||"null"); if(!o) continue;
-      const s={...def, per:freshPer()};
+  const s={...def, per:{}, tgt:{}};
+  try{
+    const o=JSON.parse(localStorage.getItem("estagfurullah_v3")||localStorage.getItem("estagfurullah_v2")||"null");
+    if(o){
       s.total=o.total||0; s.today=o.today||0; s.day=o.day||todayKey();
-      if(o.per){ DHIKRS.forEach(d=>{ if(o.per[d.key]) s.per[d.key]={count:0,round:0,total:0,...o.per[d.key]}; }); }
-      else { const k=DHIKRS[o.dhikr]?.key||"kisa"; s.per[k]={count:o.count||0,round:o.round||0,total:o.total||0}; }
-      if(s.day!==todayKey()){ s.day=todayKey(); s.today=0; }
-      return s;
-    }catch(e){}
-  }
-  return {...def, per:freshPer()};
+      if(o.per){ ["kisa","orta","uzun"].forEach(k=>{ if(o.per[k]) s.per[k]={count:o.per[k].count||0,round:o.per[k].round||0,total:o.per[k].total||0}; }); }
+    }
+  }catch(e){}
+  return s;
 }
 function save(){ try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){} }
-const cur=()=>DHIKRS[S.dhikr];
-const P=()=>S.per[cur().key];
+function pof(id){ if(!S.per[id]) S.per[id]={count:0,round:0,total:0}; return S.per[id]; }
+function tof(id){ return S.tgt[id] ?? defTarget(ITEMS[id]); }
 
+/* =========================================================
+   GÖRÜNÜMLER
+========================================================= */
 const $=id=>document.getElementById(id);
-const ringFg=$("ringFg"), R=47, CIRC=2*Math.PI*R; ringFg.style.strokeDasharray=CIRC;
+function show(v){ document.querySelectorAll(".view").forEach(e=>e.classList.remove("active")); $(v).classList.add("active"); }
 
-/* ---- titreşim (ses yok) ---- */
+const CATS={ istigfar:{title:"İstiğfar", items:()=>ISTIGFAR.map(x=>x.id)},
+             esma:{title:"Esmâ-ül Hüsnâ", items:()=>ESMA.map((x,i)=>"esma_"+i)},
+             korunma:{title:"Korunma · Cin Def'i", items:()=>KORUNMA.map(x=>x.id)} };
+
+/* ---- HOME ---- */
+document.querySelectorAll(".card[data-cat]").forEach(c=>c.onclick=()=>openList(c.dataset.cat));
+function renderResume(){
+  const w=$("resumeWrap"); w.innerHTML="";
+  if(S.last && ITEMS[S.last]){
+    const it=ITEMS[S.last];
+    w.innerHTML='<div class="resume">Kaldığın yer</div>';
+    const c=document.createElement("div"); c.className="card";
+    c.innerHTML='<div class="ic">↻</div><div class="tx"><b>'+(it.l)+'</b><span>'+(pof(it.id).count)+' / '+(tof(it.id)||"∞")+'</span></div><div class="ar">‹</div>';
+    c.onclick=()=>openCounter(it.id); w.appendChild(c);
+  }
+}
+
+/* ---- LIST ---- */
+let curCat="esma";
+function openList(cat){
+  curCat=cat; $("listTitle").textContent=CATS[cat].title;
+  const ids=CATS[cat].items();
+  $("listSub").textContent=ids.length+" zikir";
+  const L=$("list"); L.innerHTML="";
+  if(cat==="korunma"){ const h=document.createElement("div"); h.className="gsec"; h.textContent="Kur'ân & sahih duâlar · havâs esmâları"; L.appendChild(h); }
+  ids.forEach((id,i)=>{
+    const it=ITEMS[id];
+    const r=document.createElement("div"); r.className="row";
+    const eb = it.cat==="esma" ? '<div class="eb"><b>'+it.e+'</b><span>EBCED</span></div>'
+             : it.cat==="istigfar" ? '<div class="eb"><b>'+it.l+'</b></div>' : '';
+    r.innerHTML =
+      (cat==="esma" ? '<div class="idx">'+i+'</div>' : '') +
+      '<div class="ar">'+it.a.split(" ").slice(0,3).join(" ")+'</div>' +
+      '<div class="tx"><b>'+(cat==="esma"?it.l:it.l)+'</b><span>'+it.m.replace(/«[^»]*»\s*/,'').slice(0,46)+'</span></div>' +
+      eb;
+    r.onclick=()=>openCounter(id);
+    L.appendChild(r);
+  });
+  L.scrollTop=0; show("listView");
+}
+$("listBack").onclick=()=>show("home");
+
+/* ---- COUNTER ---- */
+let curId=null;
+const ringFg=$("ringFg"), R=47, CIRC=2*Math.PI*R; ringFg.style.strokeDasharray=CIRC;
 function vibe(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
-/* ---- render ---- */
+function openCounter(id){ curId=id; S.last=id; save(); render(); show("counter"); }
+$("cBack").onclick=()=>{ const it=ITEMS[curId]; openList(it.cat); };
+
 function render(){
-  const d=cur(), p=P(), t=tarOf(S.target);
-  $("arabic").textContent=d.arabic;
-  $("latin").textContent=d.latin;
-  $("meaning").textContent=d.meaning;
+  const it=ITEMS[curId], p=pof(curId), t=tof(curId);
+  $("cTitle").textContent = it.cat==="esma" ? "Esmâ" : it.cat==="korunma" ? "Korunma" : "İstiğfar";
+  $("arabic").textContent=it.a;
+  $("latin").textContent=it.latin;
+  $("meaning").textContent=it.m;
   $("count").textContent=p.count;
-  $("ofLbl").textContent = S.target===0 ? "∞" : "/ "+S.target;
-  $("note").textContent = t.note;
-  $("sToday").textContent=S.today; $("sRound").textContent=p.round; $("sTotal").textContent=S.total;
-  $("selVer").textContent=d.short;
-  $("selTar").textContent = S.target===0 ? "sınırsız" : "hedef "+S.target;
-  const frac = S.target===0 ? (p.count%33)/33 : Math.min(p.count/S.target,1);
+  $("ofLbl").textContent = t===0 ? "∞" : "/ "+t;
+  $("note").textContent = noteFor(it,t);
+  $("sToday").textContent=S.today; $("sRound").textContent=p.round; $("sItem").textContent=p.total; $("sTotal").textContent=S.total;
+  $("selName").textContent=it.l;
+  $("selTar").textContent = t===0 ? "sınırsız" : "hedef "+t;
+  const frac = t===0 ? (p.count%33)/33 : Math.min(p.count/t,1);
   ringFg.style.strokeDashoffset = CIRC*(1-frac);
 }
-function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),1600); }
+function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),1500); }
 
-/* ---- sayım ---- */
 function doCount(){
-  const p=P(); p.count++; p.total++; S.total++; S.today++;
+  const p=pof(curId), t=tof(curId);
+  p.count++; p.total++; S.total++; S.today++;
   vibe(16);
-  if(S.target!==0 && p.count>=S.target){ p.round++; p.count=0; vibe([50,40,110]); toast("✦ "+p.round+". tur tamam"); }
+  if(t!==0 && p.count>=t){ p.round++; p.count=0; vibe([50,40,110]); toast("✦ "+p.round+". tur tamam"); }
   render(); save();
 }
 function manualEdit(){
-  const p=P(); const v=prompt("Sayacı düzelt — yeni değer:", p.count);
-  if(v===null) return;
+  const p=pof(curId);
+  const v=prompt("Sayacı düzelt — yeni değer:", p.count); if(v===null) return;
   const n=Math.max(0,Math.floor(Number(v))); if(!isFinite(n)) return;
-  const delta=n-p.count; p.count=n;
-  p.total=Math.max(0,p.total+delta); S.total=Math.max(0,S.total+delta); S.today=Math.max(0,S.today+delta);
-  render(); save(); toast("Sayaç düzeltildi");
+  const d=n-p.count; p.count=n;
+  p.total=Math.max(0,p.total+d); S.total=Math.max(0,S.total+d); S.today=Math.max(0,S.today+d);
+  render(); save(); toast("Düzeltildi");
 }
-
-/* dokun = +1, basılı tut = düzelt */
-let holdTimer=null, held=false;
-function down(e){ if(sheetOpen) return; held=false; holdTimer=setTimeout(()=>{held=true; vibe(40); manualEdit();},550); }
-function up(e){ if(sheetOpen) return; clearTimeout(holdTimer); if(!held) doCount(); }
+let holdTimer=null, held=false, sheetOpen=false;
 const stage=$("stage");
-stage.addEventListener("pointerdown",e=>{e.preventDefault(); down(e);},{passive:false});
-stage.addEventListener("pointerup",e=>{e.preventDefault(); up(e);},{passive:false});
+stage.addEventListener("pointerdown",e=>{ if(sheetOpen)return; e.preventDefault(); held=false; holdTimer=setTimeout(()=>{held=true; vibe(40); manualEdit();},550); },{passive:false});
+stage.addEventListener("pointerup",e=>{ if(sheetOpen)return; e.preventDefault(); clearTimeout(holdTimer); if(!held) doCount(); },{passive:false});
 stage.addEventListener("pointerleave",()=>clearTimeout(holdTimer));
 stage.addEventListener("pointercancel",()=>clearTimeout(holdTimer));
 
-/* ---- sheet ---- */
-let sheetOpen=false;
+/* ---- SHEET ---- */
 function buildSheet(){
-  const vr=$("verRow"); vr.innerHTML="";
-  DHIKRS.forEach((d,i)=>{
-    const c=document.createElement("div");
-    c.className="chip ver"+(i===S.dhikr?" active":"");
-    c.innerHTML=d.short+"<small>toplam "+S.per[d.key].total+"</small>";
-    c.onclick=()=>{ S.dhikr=i; render(); buildSheet(); save(); };
-    vr.appendChild(c);
-  });
+  const it=ITEMS[curId], t=tof(curId);
   const tr=$("tarRow"); tr.innerHTML="";
-  TARGETS.forEach(t=>{
+  targetsFor(it).forEach(opt=>{
     const c=document.createElement("div");
-    c.className="chip"+(t.n===S.target?" active":"");
-    c.innerHTML=(t.n===0?"∞":t.n)+"<small>"+t.grp+"</small>";
-    c.onclick=()=>{ S.target=t.n; render(); buildSheet(); save(); };
+    c.className="chip"+(opt.n===t?" active":"");
+    c.innerHTML=(opt.n===0?"∞":opt.n)+(opt.g||opt.note?"<small>"+(opt.note||opt.g)+"</small>":"");
+    c.onclick=()=>{ S.tgt[curId]=opt.n; render(); buildSheet(); save(); };
     tr.appendChild(c);
   });
-  // özel hedef
-  const cc=document.createElement("div");
-  cc.className="chip"; cc.innerHTML="✎ özel<small>kendin gir</small>";
-  cc.onclick=()=>{ const v=prompt("Özel hedef adedi:", S.target||100); if(v===null) return; const n=Math.max(0,Math.floor(Number(v))); if(isFinite(n)){ S.target=n; render(); buildSheet(); save(); } };
-  $("tarRow").appendChild(cc);
+  const cc=document.createElement("div"); cc.className="chip"; cc.innerHTML="✎ özel<small>gir</small>";
+  cc.onclick=()=>{ const v=prompt("Özel hedef adedi:", t||100); if(v===null)return; const n=Math.max(0,Math.floor(Number(v))); if(isFinite(n)){ S.tgt[curId]=n; render(); buildSheet(); save(); } };
+  tr.appendChild(cc);
+
+  // kaynak kutusu
+  const sb=$("srcBox");
+  if(it.cat==="esma"){
+    sb.innerHTML='<p><b>'+it.l+'</b> — '+it.m+'</p>'+
+      '<p>Havâs geleneğinde bu ism-i şerîfin zikir adedi, ebced değeri olan <b>'+it.e+'</b> kabul edilir; az adetli (1·3·7·19·33·99) zikir de yapılır.</p>'+
+      '<p class="warn">Ebced/havâs adetleri tasavvuf-havâs geleneğine aittir; hadis hükmünde değildir. Esmâ ile zikir özünde meşrû ve güzeldir.</p>';
+  } else if(it.cat==="korunma"){
+    sb.innerHTML='<p>'+it.m+'</p>'+
+      '<p class="warn">Sahih sünnet kaynaklı olanlar (Âyetü'+"'"+'l-Kürsî, Muavvizeteyn, Eûzü duâsı) önceliklidir; esmâ adetleri havâs geleneğindendir. Israrlı sıkıntıda ehil bir kişiye danışmak ve sağlığı ihmal etmemek tavsiye olunur.</p>';
+  } else {
+    sb.innerHTML='<p><b>İstiğfar</b> — günde 70/100 istiğfar sünnettir. Bu bölümde adet olarak ebced sayıları sunulmuştur:</p>'+
+      '<p>• <b>66</b> = «Allah» lafzının ebcedi · <b>1807</b> = «أستغفر الله» ibaresinin ebced-i kebîri.</p>'+
+      '<p class="warn">Ebced adetleri havâs geleneğine aittir, hadis hükmünde değildir.</p>';
+  }
 }
 function openSheet(){ buildSheet(); $("sheet").classList.add("show"); $("scrim").classList.add("show"); sheetOpen=true; }
 function closeSheet(){ $("sheet").classList.remove("show"); $("scrim").classList.remove("show"); sheetOpen=false; }
-$("openSheet").onclick=openSheet;
-$("openInfo").onclick=openSheet;
-$("scrim").onclick=closeSheet;
+$("openSheet").onclick=openSheet; $("openInfo").onclick=openSheet; $("scrim").onclick=closeSheet;
 
-$("undo").onclick=()=>{ const p=P(); if(p.count>0){p.count--;} else if(p.round>0){p.round--; p.count=(S.target||33)-1;} else return; if(p.total>0)p.total--; if(S.total>0)S.total--; if(S.today>0)S.today--; render(); save(); };
-$("editBtn").onclick=()=>{ manualEdit(); buildSheet(); };
-$("resetVer").onclick=()=>{ const p=P(); p.count=0; p.round=0; render(); buildSheet(); save(); toast("Bu versiyon sıfırlandı"); };
-$("resetAll").onclick=()=>{ if(confirm("TÜM sayılar silinsin mi? Geri alınamaz.")){ S=JSON.parse(JSON.stringify(def)); S.per=freshPer(); save(); render(); buildSheet(); toast("Her şey sıfırlandı"); } };
+$("undo").onclick=()=>{ const p=pof(curId), t=tof(curId); if(p.count>0)p.count--; else if(p.round>0){p.round--; p.count=(t||33)-1;} else return; if(p.total>0)p.total--; if(S.total>0)S.total--; if(S.today>0)S.today--; render(); save(); };
+$("editBtn").onclick=manualEdit;
+$("resetItem").onclick=()=>{ const p=pof(curId); p.count=0; p.round=0; render(); save(); toast("Bu zikir sıfırlandı"); };
+$("resetAll").onclick=()=>{ if(confirm("TÜM sayılar silinsin mi? Geri alınamaz.")){ S=JSON.parse(JSON.stringify(def)); S.day=todayKey(); save(); render(); toast("Her şey sıfırlandı"); } };
 
 /* ekranı açık tut */
 let wl=null;
@@ -315,7 +586,8 @@ async function keepAwake(){ try{ if("wakeLock" in navigator){ wl=await navigator
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") keepAwake(); });
 keepAwake();
 
-render();
+renderResume();
+show("home");
 </script>
 </body>
 </html>
