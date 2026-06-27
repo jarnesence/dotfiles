@@ -3,129 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0b1f1a">
+<meta name="theme-color" content="#0a0f0d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Estağfurullah Zikir</title>
+<title>Estağfurullah</title>
 <style>
   :root{
-    --bg1:#07150f; --bg2:#0b231a;
-    --gold:#d8b15a; --gold-soft:#e7c97e;
-    --green:#1f8f6a; --green-deep:#0f5a42;
-    --text:#eef4f0; --muted:#9db5aa;
-    --ring:#143226;
+    --bg:#0a0f0d; --ink:#eef2ef; --muted:#7c8c84;
+    --gold:#c9a35a; --gold-soft:#e3c98a;
+    --line:rgba(255,255,255,.07);
+    --glass:rgba(255,255,255,.035);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;margin:0;}
+  html,body{height:100%; margin:0;}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    color:var(--text);
-    background:radial-gradient(120% 80% at 50% -10%, #15402f 0%, var(--bg2) 45%, var(--bg1) 100%);
+    color:var(--ink); background:var(--bg);
+    background-image:radial-gradient(130% 90% at 50% 8%, #15201b 0%, #0c130f 55%, #070b09 100%);
     background-attachment:fixed;
     overflow:hidden; user-select:none; -webkit-user-select:none;
-    display:flex; flex-direction:column; height:100dvh;
+    height:100dvh; display:flex; flex-direction:column;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
-  header{flex:0 0 auto; text-align:center; padding:12px 16px 2px;}
-  .title{font-size:13px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; font-weight:600;}
-  .stats{display:flex; justify-content:center; gap:9px; margin-top:9px;}
-  .stat{background:rgba(255,255,255,.04); border:1px solid var(--ring); border-radius:14px; padding:7px 13px; min-width:82px;}
-  .stat b{display:block; font-size:18px; color:var(--gold-soft); font-variant-numeric:tabular-nums;}
-  .stat span{font-size:10px; color:var(--muted); letter-spacing:.5px;}
+  /* ----- Üst: zikir metni (sade) ----- */
+  .top{flex:0 0 auto; text-align:center; padding:22px 24px 0;}
+  .arabic{font-size:clamp(22px,7vw,34px); line-height:1.85; color:#fbf7ee; direction:rtl; font-weight:500; letter-spacing:.5px;}
+  .latin{margin-top:10px; font-size:13px; color:var(--gold-soft); font-style:italic; line-height:1.55; font-weight:300;}
+  .meaning{margin-top:6px; font-size:11px; color:var(--muted); line-height:1.5; font-weight:300; max-width:520px; margin-left:auto; margin-right:auto;}
 
-  .dhikr{flex:0 0 auto; text-align:center; padding:8px 18px 0;}
-  .arabic{font-size:clamp(24px,7.5vw,38px); line-height:1.7; color:#fff; direction:rtl; font-weight:600; text-shadow:0 2px 18px rgba(216,177,90,.25);}
-  .latin{margin-top:7px; font-size:13.5px; color:var(--gold-soft); font-style:italic; line-height:1.5;}
-  .meaning{margin-top:5px; font-size:11.5px; color:var(--muted); line-height:1.5;}
+  /* ----- Orta: sayaç sahnesi ----- */
+  .stage{flex:1 1 auto; position:relative; display:flex; align-items:center; justify-content:center; min-height:0; cursor:pointer;}
+  .breath{position:absolute; width:min(92vw,420px); aspect-ratio:1; border-radius:50%;
+    background:radial-gradient(circle, rgba(201,163,90,.10) 0%, rgba(201,163,90,0) 70%);
+    animation:breathe 10s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{transform:scale(.82); opacity:.45;} 50%{transform:scale(1.05); opacity:.9;}}
 
-  .counter-wrap{flex:1 1 auto; display:flex; align-items:center; justify-content:center; position:relative; min-height:0;}
-  .tap{
-    position:relative; width:min(70vw,290px); aspect-ratio:1/1; border-radius:50%; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    background:radial-gradient(circle at 50% 35%, #1c6048 0%, #114734 55%, #0c3527 100%);
-    box-shadow:0 0 0 1px rgba(216,177,90,.30) inset, 0 0 50px rgba(31,143,106,.35), 0 18px 40px rgba(0,0,0,.45);
-    transition:transform .08s ease;
-  }
-  .tap:active{transform:scale(.965);}
-  .tap.pulse{animation:pulse .35s ease;}
-  @keyframes pulse{0%{box-shadow:0 0 0 1px rgba(216,177,90,.3) inset,0 0 50px rgba(31,143,106,.35),0 18px 40px rgba(0,0,0,.45);}
-    40%{box-shadow:0 0 0 2px rgba(216,177,90,.75) inset,0 0 75px rgba(216,177,90,.5),0 18px 40px rgba(0,0,0,.45);}
-    100%{box-shadow:0 0 0 1px rgba(216,177,90,.3) inset,0 0 50px rgba(31,143,106,.35),0 18px 40px rgba(0,0,0,.45);}}
+  .dial{position:relative; width:min(66vw,260px); aspect-ratio:1; display:flex; align-items:center; justify-content:center;}
+  .ring{position:absolute; inset:0; transform:rotate(-90deg);}
+  .ring circle{fill:none; stroke-width:2.5; stroke-linecap:round;}
+  .ring .bg{stroke:var(--line);}
+  .ring .fg{stroke:var(--gold); transition:stroke-dashoffset .35s ease; filter:drop-shadow(0 0 6px rgba(201,163,90,.45));}
+  .num{text-align:center;}
+  .count{font-size:clamp(58px,17vw,84px); font-weight:200; color:#fff; font-variant-numeric:tabular-nums; line-height:1; letter-spacing:-2px;}
+  .of{margin-top:8px; font-size:12px; color:var(--muted); letter-spacing:2px; font-weight:300;}
+  .note{margin-top:10px; font-size:10.5px; color:var(--gold); opacity:.75; letter-spacing:.3px; font-weight:300; min-height:14px; padding:0 16px;}
 
-  .ring{position:absolute; inset:-12px; transform:rotate(-90deg);}
-  .ring circle{fill:none; stroke-width:7; stroke-linecap:round;}
-  .ring .bg{stroke:rgba(255,255,255,.06);}
-  .ring .fg{stroke:url(#grad); transition:stroke-dashoffset .25s ease;}
+  /* ----- Alt: minimal bar ----- */
+  .meta{flex:0 0 auto; text-align:center; font-size:10.5px; color:var(--muted); letter-spacing:1.5px; font-weight:300; padding:2px 0 8px;}
+  .meta b{color:var(--gold-soft); font-weight:400;}
+  .bar{flex:0 0 auto; display:flex; gap:10px; padding:0 16px calc(16px + env(safe-area-inset-bottom));}
+  .bbtn{flex:0 0 auto; width:50px; height:50px; border-radius:16px; border:1px solid var(--line); background:var(--glass); color:var(--ink); font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .12s;}
+  .bbtn:active{transform:scale(.92);}
+  .bsel{flex:1 1 auto; height:50px; border-radius:16px; border:1px solid var(--line); background:var(--glass); color:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:transform .12s; gap:1px;}
+  .bsel:active{transform:scale(.98);}
+  .bsel .v{font-size:14px; color:#fff; font-weight:400;}
+  .bsel .h{font-size:10px; color:var(--gold-soft); letter-spacing:.5px;}
 
-  .count{font-size:78px; font-weight:800; color:#fff; font-variant-numeric:tabular-nums; line-height:1; letter-spacing:-1px;}
-  .target{margin-top:4px; font-size:14px; color:var(--gold-soft); letter-spacing:1px;}
-  .edit{margin-top:2px; font-size:9.5px; color:var(--muted); letter-spacing:.5px;}
-  .hint{position:absolute; bottom:4px; font-size:11px; color:var(--muted); width:100%; text-align:center; pointer-events:none;}
-
-  .controls{flex:0 0 auto; padding:4px 14px calc(12px + env(safe-area-inset-bottom));}
-  .row{display:flex; gap:8px; margin-top:7px;}
-  .chip{flex:1; text-align:center; padding:9px 4px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid var(--ring); color:var(--text); font-size:13px; cursor:pointer; transition:all .15s; position:relative;}
-  .chip.active{background:linear-gradient(180deg,#1f8f6a,#0f5a42); border-color:var(--gold); color:#fff; font-weight:600;}
+  /* ----- Sheet ----- */
+  .scrim{position:fixed; inset:0; background:rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:opacity .25s; z-index:40; backdrop-filter:blur(2px);}
+  .scrim.show{opacity:1; pointer-events:auto;}
+  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:41; transform:translateY(102%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
+    background:#0e1714; border-top:1px solid var(--line); border-radius:22px 22px 0 0; padding:10px 18px calc(20px + env(safe-area-inset-bottom));
+    max-height:86dvh; overflow-y:auto;}
+  .sheet.show{transform:translateY(0);}
+  .grip{width:38px; height:4px; border-radius:4px; background:rgba(255,255,255,.18); margin:6px auto 14px;}
+  .sect{font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin:16px 2px 8px;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{padding:10px 14px; border-radius:13px; background:var(--glass); border:1px solid var(--line); color:var(--ink); font-size:13px; cursor:pointer; transition:all .15s; line-height:1.25;}
+  .chip small{display:block; font-size:9.5px; color:var(--gold-soft); margin-top:2px; opacity:.85;}
+  .chip.active{background:linear-gradient(180deg,rgba(201,163,90,.22),rgba(201,163,90,.08)); border-color:var(--gold); color:#fff;}
+  .chip.active small{color:var(--gold-soft);}
   .chip:active{transform:scale(.96);}
-  .chip small{display:block; font-size:9px; color:var(--gold-soft); margin-top:2px; font-variant-numeric:tabular-nums;}
-  .chip.active small{color:#fff;}
-  .btn{flex:1; padding:11px; border-radius:13px; border:1px solid var(--ring); background:rgba(255,255,255,.04); color:var(--text); font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s;}
-  .btn:active{transform:scale(.97);}
-  .btn.warn{color:#ff9a8b;}
-  .label{font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin:9px 0 0; text-align:center;}
+  .ver small{color:var(--muted);}
+  .act{display:flex; gap:10px; margin-top:8px;}
+  .act .chip{flex:1; text-align:center;}
+  .src{margin-top:18px; border-top:1px solid var(--line); padding-top:14px;}
+  .src h4{margin:0 0 8px; font-size:11px; color:var(--gold); letter-spacing:1px; font-weight:600;}
+  .src p{margin:0 0 8px; font-size:11.5px; color:var(--muted); line-height:1.6;}
+  .src p b{color:var(--ink); font-weight:500;}
+  .src .warn{color:#caa86a; font-size:10.5px; font-style:italic;}
 
-  .toast{position:fixed; left:50%; top:16%; transform:translateX(-50%) translateY(-20px); background:linear-gradient(180deg,#d8b15a,#b8923f); color:#1a2b22; padding:12px 22px; border-radius:30px; font-weight:700; font-size:15px; opacity:0; pointer-events:none; transition:all .35s; box-shadow:0 10px 30px rgba(0,0,0,.4); z-index:50;}
+  .toast{position:fixed; left:50%; top:14%; transform:translateX(-50%) translateY(-16px); background:rgba(20,28,24,.96); border:1px solid var(--gold); color:var(--gold-soft); padding:11px 22px; border-radius:30px; font-weight:400; font-size:14px; letter-spacing:.5px; opacity:0; pointer-events:none; transition:all .3s; box-shadow:0 12px 34px rgba(0,0,0,.5); z-index:60;}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
 
-  <header>
-    <div class="title">۞ Estağfurullah ۞</div>
-    <div class="stats">
-      <div class="stat"><b id="sToday">0</b><span>BUGÜN</span></div>
-      <div class="stat"><b id="sRound">0</b><span>TUR</span></div>
-      <div class="stat"><b id="sTotal">0</b><span>TOPLAM</span></div>
-    </div>
-  </header>
-
-  <div class="dhikr">
+  <div class="top">
     <div class="arabic" id="arabic"></div>
     <div class="latin" id="latin"></div>
     <div class="meaning" id="meaning"></div>
   </div>
 
-  <div class="counter-wrap">
-    <div class="tap" id="tap">
+  <div class="stage" id="stage">
+    <div class="breath"></div>
+    <div class="dial">
       <svg class="ring" viewBox="0 0 100 100">
-        <defs>
-          <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#e7c97e"/>
-            <stop offset="100%" stop-color="#1f8f6a"/>
-          </linearGradient>
-        </defs>
-        <circle class="bg" cx="50" cy="50" r="46"/>
-        <circle class="fg" id="ringFg" cx="50" cy="50" r="46"/>
+        <circle class="bg" cx="50" cy="50" r="47"/>
+        <circle class="fg" id="ringFg" cx="50" cy="50" r="47"/>
       </svg>
-      <div style="text-align:center; z-index:2;">
+      <div class="num">
         <div class="count" id="count">0</div>
-        <div class="target" id="targetLbl">/ 33</div>
-        <div class="edit" id="editHint">✎ sayıya basılı tut: düzelt</div>
+        <div class="of" id="ofLbl">/ 70</div>
       </div>
-      <div class="hint">dokun</div>
     </div>
+    <div class="note" id="note"></div>
   </div>
 
-  <div class="controls">
-    <div class="label">Versiyon</div>
-    <div class="row" id="dhikrRow"></div>
-    <div class="label">Hedef</div>
-    <div class="row" id="targetRow"></div>
-    <div class="row">
-      <button class="btn" id="undo">↩ Geri al</button>
-      <button class="btn warn" id="reset">↺ Sıfırla</button>
+  <div class="meta">Bugün <b id="sToday">0</b> · Tur <b id="sRound">0</b> · Toplam <b id="sTotal">0</b></div>
+
+  <div class="bar">
+    <div class="bbtn" id="undo" title="Geri al">↩</div>
+    <div class="bsel" id="openSheet">
+      <span class="v" id="selVer">Kısa</span>
+      <span class="h" id="selTar">hedef 70</span>
+    </div>
+    <div class="bbtn" id="openInfo" title="Ayar / kaynak">☰</div>
+  </div>
+
+  <!-- Sheet -->
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet">
+    <div class="grip"></div>
+
+    <div class="sect">Versiyon</div>
+    <div class="chips" id="verRow"></div>
+
+    <div class="sect">Hedef adedi</div>
+    <div class="chips" id="tarRow"></div>
+
+    <div class="sect">Sayaç</div>
+    <div class="act">
+      <div class="chip" id="editBtn">✎ Sayıyı düzelt</div>
+      <div class="chip" id="resetVer">↺ Bu versiyon</div>
+      <div class="chip" id="resetAll">⨯ Her şey</div>
+    </div>
+
+    <div class="src">
+      <h4>۞ Adetler ve sahih kaynaklar</h4>
+      <p><b>Sünnet (sahih hadis):</b><br>
+         • Günde <b>70</b> kez — “Vallahi ben günde yetmiş defadan fazla Allah'a istiğfar ederim.” (Buhârî, Daavât 3)<br>
+         • Günde <b>100</b> kez — Hz. Peygamber günde yüz defa istiğfar ederdi. (Müslim, Zikir 41)<br>
+         • Namaz sonu <b>×3</b> — selâmdan sonra üç kez “Estağfirullah”. (Müslim, Mesâcid 135)<br>
+         • <b>33</b> — namaz sonrası tesbihat geleneği.</p>
+      <p><b>Tasavvuf:</b> İstiğfar, Kadirî yolunun (Abdülkàdir Geylânî) ve genel tarîkat virdlerinin esasıdır; çoğu yolda günlük <b>100</b> istiğfar derse konur.</p>
+      <p><b>Ebced (havâs–cifr geleneği):</b><br>
+         • <b>66</b> — “Allah” (الله) lafzının ebced değeri.<br>
+         • <b>1807</b> — “أستغفر الله” ifadesinin ebced-i kebîr değeri.<br>
+         <span class="warn">Not: Ebced/cifr adetleri tasavvuf-havâs geleneğine aittir; sünnetle sabit (hadis hükmünde) değildir.</span></p>
     </div>
   </div>
 
@@ -134,9 +161,6 @@
 <script>
 "use strict";
 
-/* ----------------------------------------------------------
-   Estağfurullah (İstiğfar) — en sahih kısa/uzun formlar
----------------------------------------------------------- */
 const DHIKRS = [
   { key:"kisa", short:"Kısa",
     arabic:"أَسْتَغْفِرُ ٱللّٰهَ",
@@ -149,172 +173,153 @@ const DHIKRS = [
   { key:"uzun", short:"Uzun",
     arabic:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ ٱلَّذِي لَا إِلٰهَ إِلَّا هُوَ ٱلْحَيَّ ٱلْقَيُّومَ وَأَتُوبُ إِلَيْهِ",
     latin:"Estağfirullâhe'l-azîme'llezî lâ ilâhe illâ hüve'l-hayye'l-kayyûme ve etûbü ileyh",
-    meaning:"«Kendisinden başka ilah olmayan, Hayy ve Kayyûm olan Yüce Allah'tan bağışlanma diler ve O'na tevbe ederim.»" }
+    meaning:"«Kendisinden başka ilah olmayan, Hayy ve Kayyûm olan Yüce Allah'tan bağışlanma diler, O'na tevbe ederim.»" }
 ];
-const TARGETS = [33, 99, 100, 1000, 0]; // 0 = ∞
 
-/* ----------------------------------------------------------
-   State — HER VERSİYON KENDİ SAYISINI TUTAR.
-   per[key] = { count, round, total }   (versiyona özel)
-   today / total / day = genel toplamlar
----------------------------------------------------------- */
-const LS = "estagfurullah_v2";
+/* hedefler — kaynak notlu */
+const TARGETS = [
+  {n:3,    grp:"Sünnet", note:"Namaz sonu ×3 (Müslim)"},
+  {n:33,   grp:"Tesbih", note:"Namaz sonrası tesbihat (33)"},
+  {n:70,   grp:"Sünnet", note:"Günde 70 — Hz. Peygamber (Buhârî, Daavât 3)"},
+  {n:100,  grp:"Sünnet", note:"Günde 100 (Müslim, Zikir 41)"},
+  {n:66,   grp:"Ebced",  note:"Ebced: «Allah» = 66 (havâs geleneği)"},
+  {n:1807, grp:"Ebced",  note:"Ebced: «أستغفر الله» = 1807 (havâs geleneği)"},
+  {n:0,    grp:"Serbest",note:"Sınırsız"}
+];
+function tarOf(n){ return TARGETS.find(t=>t.n===n) || {n, note:"Özel hedef ("+n+")"}; }
+
+/* ---- State: her versiyon kendi sayısını tutar ---- */
+const LS="estagfurullah_v3";
 function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
 function freshPer(){ const o={}; DHIKRS.forEach(d=>o[d.key]={count:0,round:0,total:0}); return o; }
-const def = { dhikr:0, target:33, per:freshPer(), today:0, total:0, day:todayKey() };
+const def={ dhikr:0, target:70, per:freshPer(), today:0, total:0, day:todayKey() };
 
-let S = load();
+let S=load();
 function load(){
   try{
-    const raw = localStorage.getItem(LS);
-    if(!raw){ return migrate(); }
-    const s = {...def, ...JSON.parse(raw)};
-    s.per = {...freshPer(), ...(s.per||{})};
-    DHIKRS.forEach(d=>{ s.per[d.key] = {count:0,round:0,total:0, ...(s.per[d.key]||{})}; });
-    if(s.day !== todayKey()){ s.day = todayKey(); s.today = 0; }
+    const raw=localStorage.getItem(LS);
+    if(!raw) return migrate();
+    const s={...def,...JSON.parse(raw)};
+    s.per={...freshPer(),...(s.per||{})};
+    DHIKRS.forEach(d=>{ s.per[d.key]={count:0,round:0,total:0,...(s.per[d.key]||{})}; });
+    if(s.day!==todayKey()){ s.day=todayKey(); s.today=0; }
     return s;
   }catch(e){ return {...def, per:freshPer()}; }
 }
-/* eski v1 verisini taşı (varsa) */
 function migrate(){
-  try{
-    const old = JSON.parse(localStorage.getItem("estagfurullah_v1")||"null");
-    if(old){
-      const s = {...def, per:freshPer()};
-      s.total = old.total||0; s.today = old.today||0; s.day = old.day||todayKey();
-      const k = DHIKRS[old.dhikr]?.key || "kisa";
-      s.per[k] = {count:old.count||0, round:old.round||0, total:old.total||0};
+  for(const old of ["estagfurullah_v2","estagfurullah_v1"]){
+    try{
+      const o=JSON.parse(localStorage.getItem(old)||"null"); if(!o) continue;
+      const s={...def, per:freshPer()};
+      s.total=o.total||0; s.today=o.today||0; s.day=o.day||todayKey();
+      if(o.per){ DHIKRS.forEach(d=>{ if(o.per[d.key]) s.per[d.key]={count:0,round:0,total:0,...o.per[d.key]}; }); }
+      else { const k=DHIKRS[o.dhikr]?.key||"kisa"; s.per[k]={count:o.count||0,round:o.round||0,total:o.total||0}; }
       if(s.day!==todayKey()){ s.day=todayKey(); s.today=0; }
       return s;
-    }
-  }catch(e){}
+    }catch(e){}
+  }
   return {...def, per:freshPer()};
 }
-function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+function save(){ try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){} }
+const cur=()=>DHIKRS[S.dhikr];
+const P=()=>S.per[cur().key];
 
-const cur = () => DHIKRS[S.dhikr];
-const P   = () => S.per[cur().key];
+const $=id=>document.getElementById(id);
+const ringFg=$("ringFg"), R=47, CIRC=2*Math.PI*R; ringFg.style.strokeDasharray=CIRC;
 
-/* ---- DOM ---- */
-const $ = id => document.getElementById(id);
-const tap=$("tap"), countEl=$("count"), targetLbl=$("targetLbl");
-const ringFg=$("ringFg"), R=46, CIRC=2*Math.PI*R;
-ringFg.style.strokeDasharray = CIRC;
-
-/* ---- Ses + titreşim ---- */
+/* ---- ses + titreşim ---- */
 let actx=null;
 function tick(){
   try{
     if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
     const o=actx.createOscillator(), g=actx.createGain();
-    o.type="sine"; o.frequency.value=880;
-    g.gain.setValueAtTime(0.0001, actx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.12, actx.currentTime+0.005);
-    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+0.09);
-    o.connect(g); g.connect(actx.destination);
-    o.start(); o.stop(actx.currentTime+0.1);
+    o.type="sine"; o.frequency.value=740;
+    g.gain.setValueAtTime(0.0001,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.07,actx.currentTime+0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+0.12);
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+0.13);
   }catch(e){}
 }
-function vibe(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} }
+function vibe(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
-/* ---- Render ---- */
-function buildChips(){
-  const dr=$("dhikrRow"); dr.innerHTML="";
-  DHIKRS.forEach((d,i)=>{
-    const c=document.createElement("div");
-    c.className="chip"+(i===S.dhikr?" active":"");
-    c.innerHTML = d.short + "<small>"+(S.per[d.key].total)+"</small>";
-    c.onclick=()=>{ S.dhikr=i; render(); save(); };
-    dr.appendChild(c);
-  });
-  const tr=$("targetRow"); tr.innerHTML="";
-  TARGETS.forEach(t=>{
-    const c=document.createElement("div");
-    c.className="chip"+(t===S.target?" active":"");
-    c.textContent = t===0 ? "∞" : t;
-    c.onclick=()=>{ S.target=t; render(); save(); };
-    tr.appendChild(c);
-  });
-}
+/* ---- render ---- */
 function render(){
-  const d=cur(), p=P();
+  const d=cur(), p=P(), t=tarOf(S.target);
   $("arabic").textContent=d.arabic;
   $("latin").textContent=d.latin;
   $("meaning").textContent=d.meaning;
-  countEl.textContent=p.count;
-  targetLbl.textContent = S.target===0 ? "∞" : "/ "+S.target;
-  $("sToday").textContent=S.today;
-  $("sRound").textContent=p.round;
-  $("sTotal").textContent=S.total;
-  let frac = S.target===0 ? (p.count%33)/33 : Math.min(p.count/S.target,1);
+  $("count").textContent=p.count;
+  $("ofLbl").textContent = S.target===0 ? "∞" : "/ "+S.target;
+  $("note").textContent = t.note;
+  $("sToday").textContent=S.today; $("sRound").textContent=p.round; $("sTotal").textContent=S.total;
+  $("selVer").textContent=d.short;
+  $("selTar").textContent = S.target===0 ? "sınırsız" : "hedef "+S.target;
+  const frac = S.target===0 ? (p.count%33)/33 : Math.min(p.count/S.target,1);
   ringFg.style.strokeDashoffset = CIRC*(1-frac);
-  // chip rozetleri + aktiflik
-  document.querySelectorAll("#dhikrRow .chip").forEach((c,i)=>{
-    c.classList.toggle("active",i===S.dhikr);
-    const sm=c.querySelector("small"); if(sm) sm.textContent=S.per[DHIKRS[i].key].total;
-  });
-  document.querySelectorAll("#targetRow .chip").forEach((c,i)=>c.classList.toggle("active",TARGETS[i]===S.target));
 }
-function toast(msg){
-  const t=$("toast"); t.textContent=msg; t.classList.add("show");
-  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),1700);
-}
+function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),1600); }
 
-/* ---- Sayım ---- */
+/* ---- sayım ---- */
 function doCount(){
-  const p=P();
-  p.count++; p.total++; S.total++; S.today++;
-  tap.classList.remove("pulse"); void tap.offsetWidth; tap.classList.add("pulse");
-  tick(); vibe(18);
-  if(S.target!==0 && p.count>=S.target){
-    p.round++; p.count=0;
-    vibe([60,40,120]); toast("✦ "+p.round+". tur tamam ✦");
-  }
+  const p=P(); p.count++; p.total++; S.total++; S.today++;
+  tick(); vibe(16);
+  if(S.target!==0 && p.count>=S.target){ p.round++; p.count=0; vibe([50,40,110]); toast("✦ "+p.round+". tur tamam"); }
   render(); save();
 }
-
-/* ---- Elle düzeltme (sayıya basılı tut) ---- */
 function manualEdit(){
-  const p=P();
-  const v=prompt("Sayacı düzelt — yeni değer:", p.count);
+  const p=P(); const v=prompt("Sayacı düzelt — yeni değer:", p.count);
   if(v===null) return;
-  const n=Math.max(0, Math.floor(Number(v)));
-  if(!isFinite(n)) return;
-  const delta = n - p.count;            // fark toplamlara da yansır
-  p.count = n;
-  p.total = Math.max(0, p.total+delta);
-  S.total = Math.max(0, S.total+delta);
-  S.today = Math.max(0, S.today+delta);
+  const n=Math.max(0,Math.floor(Number(v))); if(!isFinite(n)) return;
+  const delta=n-p.count; p.count=n;
+  p.total=Math.max(0,p.total+delta); S.total=Math.max(0,S.total+delta); S.today=Math.max(0,S.today+delta);
   render(); save(); toast("Sayaç düzeltildi");
 }
 
-/* ---- Olaylar (dokun = +1, basılı tut = düzelt) ---- */
+/* dokun = +1, basılı tut = düzelt */
 let holdTimer=null, held=false;
-tap.addEventListener("pointerdown", e=>{
-  e.preventDefault(); held=false;
-  holdTimer=setTimeout(()=>{ held=true; vibe(40); manualEdit(); }, 550);
-}, {passive:false});
-function endHold(){ clearTimeout(holdTimer); }
-tap.addEventListener("pointerup", e=>{
-  e.preventDefault(); clearTimeout(holdTimer);
-  if(!held) doCount();
-}, {passive:false});
-tap.addEventListener("pointerleave", endHold);
-tap.addEventListener("pointercancel", endHold);
+function down(e){ if(sheetOpen) return; held=false; holdTimer=setTimeout(()=>{held=true; vibe(40); manualEdit();},550); }
+function up(e){ if(sheetOpen) return; clearTimeout(holdTimer); if(!held) doCount(); }
+const stage=$("stage");
+stage.addEventListener("pointerdown",e=>{e.preventDefault(); down(e);},{passive:false});
+stage.addEventListener("pointerup",e=>{e.preventDefault(); up(e);},{passive:false});
+stage.addEventListener("pointerleave",()=>clearTimeout(holdTimer));
+stage.addEventListener("pointercancel",()=>clearTimeout(holdTimer));
 
-$("undo").onclick=()=>{
-  const p=P();
-  if(p.count>0){ p.count--; }
-  else if(p.round>0){ p.round--; p.count=(S.target||33)-1; }
-  else return;
-  if(p.total>0)p.total--; if(S.total>0)S.total--; if(S.today>0)S.today--;
-  render(); save();
-};
-$("reset").onclick=()=>{
-  const choice = prompt("Sıfırlama:\n1 = sadece bu versiyonun sayacı/turu\n2 = HER ŞEY (tüm versiyonlar + toplam)\n\n1 veya 2 yaz:", "1");
-  if(choice==="1"){ const p=P(); p.count=0; p.round=0; render(); save(); toast("Bu versiyon sıfırlandı"); }
-  else if(choice==="2"){ if(confirm("TÜM sayılar silinsin mi? Geri alınamaz.")){ S=JSON.parse(JSON.stringify(def)); S.per=freshPer(); save(); render(); buildChips(); toast("Her şey sıfırlandı"); } }
-};
+/* ---- sheet ---- */
+let sheetOpen=false;
+function buildSheet(){
+  const vr=$("verRow"); vr.innerHTML="";
+  DHIKRS.forEach((d,i)=>{
+    const c=document.createElement("div");
+    c.className="chip ver"+(i===S.dhikr?" active":"");
+    c.innerHTML=d.short+"<small>toplam "+S.per[d.key].total+"</small>";
+    c.onclick=()=>{ S.dhikr=i; render(); buildSheet(); save(); };
+    vr.appendChild(c);
+  });
+  const tr=$("tarRow"); tr.innerHTML="";
+  TARGETS.forEach(t=>{
+    const c=document.createElement("div");
+    c.className="chip"+(t.n===S.target?" active":"");
+    c.innerHTML=(t.n===0?"∞":t.n)+"<small>"+t.grp+"</small>";
+    c.onclick=()=>{ S.target=t.n; render(); buildSheet(); save(); };
+    tr.appendChild(c);
+  });
+  // özel hedef
+  const cc=document.createElement("div");
+  cc.className="chip"; cc.innerHTML="✎ özel<small>kendin gir</small>";
+  cc.onclick=()=>{ const v=prompt("Özel hedef adedi:", S.target||100); if(v===null) return; const n=Math.max(0,Math.floor(Number(v))); if(isFinite(n)){ S.target=n; render(); buildSheet(); save(); } };
+  $("tarRow").appendChild(cc);
+}
+function openSheet(){ buildSheet(); $("sheet").classList.add("show"); $("scrim").classList.add("show"); sheetOpen=true; }
+function closeSheet(){ $("sheet").classList.remove("show"); $("scrim").classList.remove("show"); sheetOpen=false; }
+$("openSheet").onclick=openSheet;
+$("openInfo").onclick=openSheet;
+$("scrim").onclick=closeSheet;
+
+$("undo").onclick=()=>{ const p=P(); if(p.count>0){p.count--;} else if(p.round>0){p.round--; p.count=(S.target||33)-1;} else return; if(p.total>0)p.total--; if(S.total>0)S.total--; if(S.today>0)S.today--; render(); save(); };
+$("editBtn").onclick=()=>{ manualEdit(); buildSheet(); };
+$("resetVer").onclick=()=>{ const p=P(); p.count=0; p.round=0; render(); buildSheet(); save(); toast("Bu versiyon sıfırlandı"); };
+$("resetAll").onclick=()=>{ if(confirm("TÜM sayılar silinsin mi? Geri alınamaz.")){ S=JSON.parse(JSON.stringify(def)); S.per=freshPer(); save(); render(); buildSheet(); toast("Her şey sıfırlandı"); } };
 
 /* ekranı açık tut */
 let wl=null;
@@ -322,7 +327,6 @@ async function keepAwake(){ try{ if("wakeLock" in navigator){ wl=await navigator
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") keepAwake(); });
 keepAwake();
 
-buildChips();
 render();
 </script>
 </body>
