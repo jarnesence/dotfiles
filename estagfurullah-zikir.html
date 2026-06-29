@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Havas Zikir</title>
+<title>Zikr</title>
 <style>
   :root{
     --bg:#0a0f0d; --ink:#eef2ef; --muted:#7c8c84;
@@ -120,24 +120,23 @@
 <div class="view active" id="home">
   <div class="hero">
     <div class="sym">۞</div>
-    <h1>HAVAS ZİKİR</h1>
-    <p>tevhid · istiğfar · esmâ-ül hüsnâ · korunma</p>
+    <h1>ZİKR</h1>
   </div>
   <div class="cards">
     <div id="resumeWrap"></div>
     <div class="card" data-cat="istigfar">
-      <div class="ic">✦</div>
-      <div class="tx"><b>İstiğfar</b><span>Estağfurullah · ebced zikri</span></div>
+      <div class="ic">✶</div>
+      <div class="tx"><b>İstiğfar</b><span>Estağfurullah</span></div>
       <div class="ar">‹</div>
     </div>
     <div class="card" data-cat="esma">
-      <div class="ic">۹۹</div>
-      <div class="tx"><b>Esmâ-ül Hüsnâ</b><span>99 ism-i şerîf · her birinin ebced adedi</span></div>
+      <div class="ic">٩٩</div>
+      <div class="tx"><b>Esmâ-ül Hüsnâ</b><span>99 ism-i şerîf · ebced adediyle</span></div>
       <div class="ar">‹</div>
     </div>
-    <div class="card accent" data-cat="korunma">
-      <div class="ic">🜂</div>
-      <div class="tx"><b>Korunma · Cin Def'i</b><span>Ruqye tertîbi, Âyetü'l-Kürsî, Muavvizeteyn ve havâs esmâları</span></div>
+    <div class="card" data-cat="korunma">
+      <div class="ic">☾</div>
+      <div class="tx"><b>Korunma</b><span>âyetler · esmâ · duâlar</span></div>
       <div class="ar">‹</div>
     </div>
   </div>
@@ -203,13 +202,8 @@
    VERİ
 ========================================================= */
 const ISTIGFAR = [
-  {id:"kisa", l:"Kısa", a:"أَسْتَغْفِرُ ٱللّٰهَ", say:"Estağfirullâh",
-   m:"«Allah'tan bağışlanma dilerim.»"},
-  {id:"orta", l:"Orta", a:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ", say:"Estağfirullâhe'l-azîm",
-   m:"«Yüce Allah'tan bağışlanma dilerim.»"},
-  {id:"uzun", l:"Uzun", a:"أَسْتَغْفِرُ ٱللّٰهَ ٱلْعَظِيمَ ٱلَّذِي لَا إِلٰهَ إِلَّا هُوَ ٱلْحَيَّ ٱلْقَيُّومَ وَأَتُوبُ إِلَيْهِ",
-   say:"Estağfirullâhe'l-azîme'llezî lâ ilâhe illâ hüve'l-hayye'l-kayyûme ve etûbü ileyh",
-   m:"«Kendisinden başka ilah olmayan, Hayy ve Kayyûm olan Yüce Allah'tan bağışlanma diler, O'na tevbe ederim.»"}
+  {id:"kisa", l:"Estağfurullah", a:"أَسْتَغْفِرُ ٱللّٰهَ", say:"Estağfirullâh",
+   m:"«Allah'tan bağışlanma dilerim.»"}
 ];
 
 /* a:Arapça(isim)  l:latin  e:ebced(=havas zikir adedi)  m:anlam */
@@ -321,7 +315,7 @@ const KORUNMA = [
   a:"بِسْمِ ٱللّٰهِ ٱلرَّحْمٰنِ ٱلرَّحِيمِ",
   m:"ŞÜPHEYİ ÇÖZME (geleneğin tanı yöntemi): • Abdest al, sessiz bir odada sırtüstü uzan (yastıksız). • Niyet et: 'Yâ Rabbî, bende bir musallat varsa kelâmınla ortaya çıkar ve def et.' • Şu âyetleri kendine yavaş, mânâsına odaklanarak oku (veya güvenilir bir kāriden rukye kaydı dinle), 20-40 dk: Fâtiha · Âyetü'l-Kürsî · Âmenerrasûl · A'râf 54-56 · Saffât 1-10 · Cin 1-3 · Haşr 21-24 · İhlâs-Felak-Nâs. • BAKILACAK ALÂMETLER: üst üste esneme, göz yaşarması, baş/beden ağırlığı, uyuşma-karıncalanma, mide bulantısı, ağlama veya okumayı kesme isteği, titreme, kalp sıkışması, bir uzuvda ağrı. • KARAR: Bu tepkiler okuma sırasında belirgin ve tekrar tekrar çıkıyorsa musallat şüphesi güçlenir → Tedavi'ye geç. 3-7 gün, günde 1 seans boyunca hiçbir anormal tepki çıkmıyorsa, gelenekte bu 'yok' işareti sayılır; şüphe bu yolla çözülür. • DÜRÜST NOT: Bu alâmetler kesin ispat değil, lehte/aleyhte delildir; sıradan bedensel hâllerle örtüşebilir. Geleneğin kesinliğe en yakın verdiği hüküm, ısrarlı okumaya rağmen hiçbir tepkinin çıkmamasıdır.",
   targets:[{n:1},{n:3},{n:7}], defT:1},
- {id:"ruqye", l:"Ruqye Tertîbi (kovma)", say:"Kendi üzerine sırayla oku, ellerine üfleyip vücuduna sür",
+ {id:"ruqye", l:"Korunma Tertîbi", say:"Kendi üzerine sırayla oku, ellerine üfleyip vücuduna sür",
   a:"بِسْمِ ٱللّٰهِ ٱلرَّحْمٰنِ ٱلرَّحِيمِ",
   m:"TEDAVİ PROTOKOLÜ (varsa): Abdestli, kıbleye dönük Kur'ân'ı kendi üzerine oku ve üfle. SIRA: 1) Fâtiha 2) Âyetü'l-Kürsî 3) Âmenerrasûl 4) A'râf 54-56 5) Saffât 1-10 6) Cin 1-3 7) Haşr 21-24 8) İhlâs-Felak-Nâs (3'er). Her bölüm 3 veya 7 kez. GÜNLÜK: sabah + akşam, 7 ilâ 40 gün ARALIKSIZ. • Rukye suyu: bir şişeye Fâtiha, Âyetü'l-Kürsî, Saffât 1-10 ve İhlâs-Felak-Nâs oku-üfle; günde iç ve bir kısmıyla yıkan. • Zeytinyağına oku, ağırlık/ağrı hissettiğin yere sür. • Evde Bakara sûresini dinlet — 'Şeytan, Bakara okunan evden kaçar.' (Müslim). • Namazları koru, abdestli yat, Âyetü'l-Kürsî + son iki Bakara âyetiyle uyu. BİTİŞ İŞARETİ: belirtiler tamamen kesilir ve okurken artık hiçbir tepki kalmaz. Kuvvet samimiyet-süreklilik-tevekküldedir; sonucu veren Allah'tır.",
   targets:[{n:1},{n:3},{n:7}], defT:3},
@@ -374,10 +368,10 @@ const KORUNMA = [
   m:"«Güç ve kuvvet ancak Allah'tandır.» Sıkıntı ve vesvese anında dayanak.",
   targets:[{n:33},{n:100},{n:313}], defT:100},
  {id:"kahhar", l:"Yâ Kahhâr", say:"Yâ Kahhâr", a:"يَا قَهَّار",
-  m:"Kahhâr ism-i şerîfi — musallat eden şer odaklarını kahretmesi niyetiyle. Ebced 306.",
-  targets:[{n:99},{n:306,note:"ebced ★"},{n:313}], defT:306},
+  m:"Kahhâr ism-i şerîfi — şerden korunma niyetiyle. Ebced 306.",
+  targets:[{n:306,note:"ebced ★"}], defT:306},
  {id:"muntekim", l:"Yâ Müntekim", say:"Yâ Müntekim", a:"يَا مُنْتَقِم",
-  m:"Müntekim ism-i şerîfi — zulmeden gizli varlıklardan korunma niyetiyle (havâs). Ebced 630.",
+  m:"Müntekim ism-i şerîfi — zulümden korunma niyetiyle. Ebced 630.",
   targets:[{n:630,note:"ebced ★"}], defT:630},
  {id:"hafiz", l:"Yâ Hâfız", say:"Yâ Hâfız", a:"يَا حَفِيظ",
   m:"Hâfız ism-i şerîfi — koruyup muhafaza etmesi niyetiyle. Ebced 998.",
@@ -396,18 +390,16 @@ KORUNMA.forEach(x=>ITEMS[x.id]={...x, cat:"korunma", latin:x.say});
 /* hedef listesi (kategoriye göre) */
 function targetsFor(it){
   if(it.cat==="istigfar") return [
-    {n:66,g:"Ebced",note:"«Allah» = 66"},
-    {n:1807,g:"Ebced",note:"«أستغفر الله» = 1807"},
+    {n:1807,g:"Ebced",note:"ebced ★"},
     {n:0,g:"Serbest",note:"sınırsız"}];
   if(it.cat==="esma") return [
-    {n:1,g:"Az"},{n:3,g:"Az"},{n:7,g:"Az"},{n:19,g:"Az"},{n:33,g:"Az"},{n:99,g:"Az"},
-    {n:it.e,g:"Ebced",note:"ebced ★"},{n:313,g:"Çok"},{n:1001,g:"Çok"},
+    {n:it.e,g:"Ebced",note:"ebced ★"},
     {n:0,g:"Serbest",note:"sınırsız"}];
   // korunma
   return [...(it.targets||[]), {n:0,g:"Serbest",note:"sınırsız"}];
 }
 function defTarget(it){
-  if(it.cat==="istigfar") return 66;
+  if(it.cat==="istigfar") return 1807;
   if(it.cat==="esma") return it.e;
   return it.defT||7;
 }
@@ -458,10 +450,10 @@ function show(v){ document.querySelectorAll(".view").forEach(e=>e.classList.remo
 
 const CATS={ istigfar:{title:"İstiğfar", items:()=>ISTIGFAR.map(x=>x.id)},
              esma:{title:"Esmâ-ül Hüsnâ", items:()=>ESMA.map((x,i)=>"esma_"+i)},
-             korunma:{title:"Korunma · Cin Def'i", items:()=>KORUNMA.map(x=>x.id)} };
+             korunma:{title:"Korunma", items:()=>KORUNMA.map(x=>x.id)} };
 
 /* ---- HOME ---- */
-document.querySelectorAll(".card[data-cat]").forEach(c=>c.onclick=()=>openList(c.dataset.cat));
+document.querySelectorAll(".card[data-cat]").forEach(c=>c.onclick=()=>{ const cat=c.dataset.cat; if(cat==="istigfar") openCounter("kisa"); else openList(cat); });
 function renderResume(){
   const w=$("resumeWrap"); w.innerHTML="";
   if(S.last && ITEMS[S.last]){
@@ -480,7 +472,7 @@ function openList(cat){
   const ids=CATS[cat].items();
   $("listSub").textContent=ids.length+" zikir";
   const L=$("list"); L.innerHTML="";
-  if(cat==="korunma"){ const h=document.createElement("div"); h.className="gsec"; h.textContent="Kur'ân & sahih duâlar · havâs esmâları"; L.appendChild(h); }
+  if(cat==="korunma"){ const h=document.createElement("div"); h.className="gsec"; h.textContent="âyetler · esmâ · duâlar"; L.appendChild(h); }
   ids.forEach((id,i)=>{
     const it=ITEMS[id];
     const r=document.createElement("div"); r.className="row";
@@ -504,7 +496,7 @@ const ringFg=$("ringFg"), R=47, CIRC=2*Math.PI*R; ringFg.style.strokeDasharray=C
 function vibe(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
 function openCounter(id){ curId=id; S.last=id; save(); render(); show("counter"); }
-$("cBack").onclick=()=>{ const it=ITEMS[curId]; openList(it.cat); };
+$("cBack").onclick=()=>{ const it=ITEMS[curId]; if(it.cat==="istigfar") show("home"); else openList(it.cat); };
 
 function render(){
   const it=ITEMS[curId], p=pof(curId), t=tof(curId);
@@ -564,15 +556,14 @@ function buildSheet(){
   const sb=$("srcBox");
   if(it.cat==="esma"){
     sb.innerHTML='<p><b>'+it.l+'</b> — '+it.m+'</p>'+
-      '<p>Havâs geleneğinde bu ism-i şerîfin zikir adedi, ebced değeri olan <b>'+it.e+'</b> kabul edilir; az adetli (1·3·7·19·33·99) zikir de yapılır.</p>'+
-      '<p class="warn">Ebced/havâs adetleri tasavvuf-havâs geleneğine aittir; hadis hükmünde değildir. Esmâ ile zikir özünde meşrû ve güzeldir.</p>';
+      '<p>Bu ism-i şerîfin zikir adedi, ebced değeri olan <b>'+it.e+'</b> kabul edilir.</p>'+
+      '<p class="warn">Ebced adedi gelenektendir; hadis hükmünde değildir. Esmâ ile zikir özünde meşrû ve güzeldir.</p>';
   } else if(it.cat==="korunma"){
     sb.innerHTML='<p>'+it.m+'</p>'+
-      '<p class="warn">Sahih sünnet kaynaklı olanlar (Âyetü'+"'"+'l-Kürsî, Muavvizeteyn, Eûzü duâsı) önceliklidir; esmâ adetleri havâs geleneğindendir. Israrlı sıkıntıda ehil bir kişiye danışmak ve sağlığı ihmal etmemek tavsiye olunur.</p>';
+      '<p class="warn">Âyet ve sahih duâlar önceliklidir; esmâ adetleri gelenektendir.</p>';
   } else {
-    sb.innerHTML='<p><b>İstiğfar</b> — günde 70/100 istiğfar sünnettir. Bu bölümde adet olarak ebced sayıları sunulmuştur:</p>'+
-      '<p>• <b>66</b> = «Allah» lafzının ebcedi · <b>1807</b> = «أستغفر الله» ibaresinin ebced-i kebîri.</p>'+
-      '<p class="warn">Ebced adetleri havâs geleneğine aittir, hadis hükmünde değildir.</p>';
+    sb.innerHTML='<p><b>Estağfurullah</b> — «أستغفر الله» ibaresinin tam ebced değeri <b>1807</b>'+"'"+'dir.</p>'+
+      '<p class="warn">Ebced adedi gelenektendir; hadis hükmünde değildir. Günde 70-100 istiğfar ise sünnettir.</p>';
   }
 }
 function openSheet(){ buildSheet(); $("sheet").classList.add("show"); $("scrim").classList.add("show"); sheetOpen=true; }
