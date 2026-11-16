@@ -190,7 +190,8 @@ sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 ```
 
 DNS zinciri: uygulama → `/etc/resolv.conf` (**symlink**) → systemd-resolved →
-`DNS=127.0.0.1` → dnscrypt-proxy (Mullvad DoH + Quad9 + Cloudflare).
+`DNS=127.0.0.1` (+ düz 1.1.1.1 / 9.9.9.9 yedek), `Domains=~.` → dnscrypt-proxy (Mullvad DoH + Quad9 + Cloudflare).
+- `Domains=~.` şart: yoksa Wi-Fi'nin modem DNS'i de varsayılan rota olur, sorgular operatöre sızar ve DNS engelleri geri gelir.
 - `resolv.conf` **düz dosya olmayacak**, symlink kalacak.
 - resolved katmanında **DoT/DNSSEC açma** (dnscrypt zaten şifreli; açmak zinciri kırar).
 - NM bağlantı-başı DNS'e yazma. Mullvad düz UDP/53'e cevap vermez.
