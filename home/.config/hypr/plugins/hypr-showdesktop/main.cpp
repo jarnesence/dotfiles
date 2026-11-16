@@ -37,14 +37,17 @@ namespace {
     struct SShowDesktopState {
         bool                                  gesturing       = false;
         bool                                  animating       = false;
+        bool                                  lpAnimating     = false;
         bool                                  desktopShown    = false;
         eGestureMode                          gestureMode     = MODE_NONE;
         bool                                  startShown      = false;
         float                                 startProgress   = 0.0F;
         float                                 startScale      = 1.0F;
-        float                                 currentProgress = 0.0F; // 0.0 = normal, 1.0 = scattered
+        float                                 currentProgress = 0.0F; // Show Desktop: 0.0 = normal, 1.0 = scattered
         float                                 targetProgress  = 0.0F;
-        float                                 lpProgress      = 0.0F;
+        float                                 lpProgress      = 0.0F; // Launchpad: 0.0 = closed, 1.0 = open
+        float                                 lpTarget        = 0.0F;
+        float                                 lastSentLp      = -1.0F;
         int                                   lpSockFd        = -1;
         std::string                           lpSockPath;
         std::string                           lpStatePath;
@@ -91,8 +94,15 @@ namespace {
         (void)sendto(g_state.lpSockFd, cmd.data(), cmd.size(), MSG_DONTWAIT, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr));
     }
 
-    // Deterministic diagonal/radial explosion offset so every window bursts toward
-    // the screen corners/edges and leaves `PEEK` pixels of its corner visible.
+    void sendLaunchpadProgressThrottled(float p, bool force = false) {
+        if (!force && std::abs(p - g_state.lastSentLp) < 0.025F)
+            return;
+        g_state.lastSentLp = p;
+        char buf[32];
+        std::snprintf(buf, sizeof(buf), "p %.3f", p);
+        sendLaunchpadCmd(buf);
+    }
+
     Vector2D computeScatterOffset(const Vector2D& winPos, const Vector2D& winSize, const Vector2D& monPos, const Vector2D& monSize, size_t idx) {
         const Vector2D monCenter = monPos + monSize * 0.5;
         const Vector2D winCenter = winPos + winSize * 0.5;
@@ -173,32 +183,52 @@ namespace {
         damageActiveMonitor();
     }
 
-    void restoreIfShown() {
-        if (!g_state.desktopShown && !g_state.gesturing && g_state.currentProgress <= 0.001F)
-            return;
+    void startLaunchpadAnimTo(bool open) {
+        g_state.lpTarget    = open ? 1.0F : 0.0F;
+        g_state.lpAnimating = true;
+        g_state.lastTick    = std::chrono::steady_clock::now();
+        sendLaunchpadCmd(open ? "open" : "close");
+        damageActiveMonitor();
+    }
 
-        g_state.gesturing = false;
-        startAnimationTo(false);
+    void restoreIfShown() {
+        if (g_state.desktopShown || g_state.gesturing || g_state.currentProgress > 0.001F) {
+            g_state.gesturing = false;
+            startAnimationTo(false);
+        }
     }
 
     void hkRenderWindow(void* thisptr, Render::CRenderContext& ctx, PHLWINDOW pWindow, PHLMONITOR pMonitor, const Render::SWindowRenderPresentation& presentation,
                         const Time::steady_tp& now, bool allowDim, Render::eRenderPassMode mode, bool ignorePosition, bool standalone) {
         const auto origFn = reinterpret_cast<RenderWindowFn>(g_state.renderWindowHook->m_original);
 
-        if (g_state.currentProgress > 0.0005F && pWindow && pMonitor && pWindow->mapped() && !pWindow->isHidden()) {
+        if ((g_state.currentProgress > 0.0005F || g_state.lpProgress > 0.0005F) && pWindow && pMonitor && pWindow->mapped() && !pWindow->isHidden()) {
             const auto targetMon = g_state.activeMonitor.lock();
             if (!targetMon || targetMon == pMonitor) {
                 const bool onActiveWS    = (pWindow->m_workspace == pMonitor->m_activeWorkspace);
                 const bool isPinnedOnMon = ((pWindow->m_state & Desktop::View::WINDOW_STATE_PINNED) != Desktop::View::WINDOW_STATE_NONE && pWindow->m_monitor == pMonitor);
 
                 if (onActiveWS || isPinnedOnMon) {
-                    const Vector2D winPos  = pWindow->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
-                    const Vector2D winSize = pWindow->size(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
-                    const size_t   idx     = windowIndexOnMonitor(pWindow, pMonitor);
-                    const Vector2D offset  = computeScatterOffset(winPos, winSize, pMonitor->m_position, pMonitor->m_size, idx);
-
                     Render::SWindowRenderPresentation modPres = presentation;
-                    modPres.floatingOffset += offset * static_cast<double>(g_state.currentProgress);
+
+                    if (g_state.currentProgress > 0.0005F) {
+                        const Vector2D winPos  = pWindow->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
+                        const Vector2D winSize = pWindow->size(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
+                        const size_t   idx     = windowIndexOnMonitor(pWindow, pMonitor);
+                        const Vector2D offset  = computeScatterOffset(winPos, winSize, pMonitor->m_position, pMonitor->m_size, idx);
+                        modPres.floatingOffset += offset * static_cast<double>(g_state.currentProgress);
+                    }
+
+                    // As Launchpad opens (0% -> 70%), fade out windows behind it so only
+                    // the wallpaper remains visible behind Launchpad at >= 70%.
+                    if (g_state.lpProgress > 0.0005F) {
+                        const float winAlpha = std::clamp(1.0F - (g_state.lpProgress / 0.70F), 0.0F, 1.0F);
+                        if (winAlpha <= 0.001F)
+                            return;
+                        modPres.alpha *= winAlpha;
+                        modPres.fadeAlpha *= winAlpha;
+                    }
+
                     origFn(thisptr, ctx, pWindow, pMonitor, modPres, now, allowDim, mode, ignorePosition, standalone);
                     return;
                 }
@@ -252,9 +282,6 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     initLaunchpadIPC();
     HyprlandAPI::addDispatcherV2(PHANDLE, "showdesktop", dispatchShowDesktop);
 
-    // Direct raw libinput pinch events (3/4/5 fingers):
-    // - Spread outward -> Show Desktop
-    // - Pinch inward (when Show Desktop is closed) -> Launchpad
     g_state.pinchBeginListener = Event::bus()->m_events.gesture.pinch.begin.listen([](const IPointer::SPinchBeginEvent& e, Event::SCallbackInfo& info) {
         if (e.fingers < 3)
             return;
@@ -262,18 +289,20 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         info.cancelled        = true;
         g_state.gesturing     = true;
         g_state.animating     = false;
+        g_state.lpAnimating   = false;
         g_state.activeMonitor = Desktop::focusState()->monitor();
         g_state.startScale    = 1.0F;
+        g_state.lastSentLp    = -1.0F;
 
         if (g_state.desktopShown || g_state.currentProgress > 0.01F) {
             g_state.gestureMode   = MODE_SHOW_DESKTOP;
             g_state.startShown    = g_state.desktopShown;
             g_state.startProgress = g_state.currentProgress;
-        } else if (isLaunchpadOpen()) {
+        } else if (isLaunchpadOpen() || g_state.lpProgress > 0.01F) {
             g_state.gestureMode   = MODE_LAUNCHPAD;
             g_state.startShown    = true;
-            g_state.startProgress = 1.0F;
-            g_state.lpProgress    = 1.0F;
+            g_state.startProgress = (g_state.lpProgress > 0.01F) ? g_state.lpProgress : 1.0F;
+            g_state.lpProgress    = g_state.startProgress;
         } else {
             g_state.gestureMode   = MODE_UNDECIDED;
             g_state.startShown    = false;
@@ -322,7 +351,6 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
             }
             damageActiveMonitor();
         } else if (g_state.gestureMode == MODE_LAUNCHPAD) {
-            // Pinching IN (relScale < 1.0) increases lpProgress (0.0 -> 1.0)
             const float deltaP = -std::log2(relScale) * 1.55F;
             const float rawP   = g_state.startProgress + deltaP;
 
@@ -338,9 +366,8 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
                 g_state.lpProgress = rawP;
             }
 
-            char buf[32];
-            std::snprintf(buf, sizeof(buf), "p %.3f", g_state.lpProgress);
-            sendLaunchpadCmd(buf);
+            sendLaunchpadProgressThrottled(g_state.lpProgress);
+            damageActiveMonitor();
         }
     });
 
@@ -348,10 +375,10 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         if (!g_state.gesturing)
             return;
 
-        info.cancelled         = true;
-        g_state.gesturing      = false;
-        const auto mode        = g_state.gestureMode;
-        g_state.gestureMode    = MODE_NONE;
+        info.cancelled      = true;
+        g_state.gesturing   = false;
+        const auto mode     = g_state.gestureMode;
+        g_state.gestureMode = MODE_NONE;
 
         if (mode == MODE_SHOW_DESKTOP) {
             if (e.cancelled) {
@@ -364,22 +391,29 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
                 startAnimationTo(g_state.currentProgress > 0.75F);
         } else if (mode == MODE_LAUNCHPAD) {
             if (e.cancelled) {
-                sendLaunchpadCmd(g_state.startShown ? "open" : "close");
+                startLaunchpadAnimTo(g_state.startShown);
                 return;
             }
             if (!g_state.startShown)
-                sendLaunchpadCmd(g_state.lpProgress > 0.25F ? "open" : "close");
+                startLaunchpadAnimTo(g_state.lpProgress > 0.25F);
             else
-                sendLaunchpadCmd(g_state.lpProgress > 0.75F ? "open" : "close");
+                startLaunchpadAnimTo(g_state.lpProgress > 0.75F);
         }
     });
 
     g_state.renderPreListener = Event::bus()->m_events.render.pre.listen([](PHLMONITOR pMonitor) {
-        if (!g_state.animating)
-            return;
-
         const auto targetMon = g_state.activeMonitor.lock();
         if (targetMon && pMonitor != targetMon)
+            return;
+
+        // If Launchpad was closed externally (Esc / click / app launch), fade windows back in
+        if (!g_state.gesturing && !g_state.lpAnimating && g_state.lpProgress > 0.01F && !isLaunchpadOpen()) {
+            g_state.lpTarget    = 0.0F;
+            g_state.lpAnimating = true;
+            g_state.lastTick    = std::chrono::steady_clock::now();
+        }
+
+        if (!g_state.animating && !g_state.lpAnimating)
             return;
 
         const auto  now = std::chrono::steady_clock::now();
@@ -388,16 +422,26 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 
         constexpr float SPEED = 16.0F;
         const float     alpha = 1.0F - std::exp(-SPEED * dt);
-        g_state.currentProgress += (g_state.targetProgress - g_state.currentProgress) * alpha;
 
-        if (std::abs(g_state.targetProgress - g_state.currentProgress) < 0.0015F) {
-            g_state.currentProgress = g_state.targetProgress;
-            g_state.animating       = false;
+        if (g_state.animating) {
+            g_state.currentProgress += (g_state.targetProgress - g_state.currentProgress) * alpha;
+            if (std::abs(g_state.targetProgress - g_state.currentProgress) < 0.0015F) {
+                g_state.currentProgress = g_state.targetProgress;
+                g_state.animating       = false;
+            }
+        }
+
+        if (g_state.lpAnimating) {
+            g_state.lpProgress += (g_state.lpTarget - g_state.lpProgress) * alpha;
+            if (std::abs(g_state.lpTarget - g_state.lpProgress) < 0.0015F) {
+                g_state.lpProgress  = g_state.lpTarget;
+                g_state.lpAnimating = false;
+            }
         }
     });
 
     g_state.renderStageListener = Event::bus()->m_events.render.stage.listen([](const Event::SRenderStageEvent& e) {
-        if (!g_state.animating || e.stage != RENDER_POST || !e.monitor)
+        if ((!g_state.animating && !g_state.lpAnimating) || e.stage != RENDER_POST || !e.monitor)
             return;
 
         const auto targetMon = g_state.activeMonitor.lock();
@@ -413,14 +457,16 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         restoreIfShown();
     });
 
-    return {"hypr-showdesktop", "macOS-style 1:1 Show Desktop + Launchpad", "jarn", "2.1.0"};
+    return {"hypr-showdesktop", "macOS-style 1:1 Show Desktop + Launchpad", "jarn", "2.1.1"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
     g_state.animating       = false;
+    g_state.lpAnimating     = false;
     g_state.gesturing       = false;
     g_state.desktopShown    = false;
     g_state.currentProgress = 0.0F;
+    g_state.lpProgress      = 0.0F;
     damageActiveMonitor();
 
     if (g_state.lpSockFd >= 0) {

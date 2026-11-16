@@ -25,7 +25,7 @@ CSS = """
 window#launchpad-window,
 #launchpad-bg {
     background-image: none;
-    background-color: rgba(10, 12, 18, 0.84);
+    background-color: rgba(10, 12, 18, 0.28);
 }
 
 #launchpad-search {
@@ -145,6 +145,9 @@ class LaunchpadWindow(Gtk.Window):
         self.connect("scroll-event", self._on_scroll)
         self.add_events(Gdk.EventMask.SCROLL_MASK | Gdk.EventMask.SMOOTH_SCROLL_MASK)
 
+        # Pre-realize all widgets once so first open is instant
+        self.show_all()
+        self.hide()
         write_state(False)
 
     def _build_ui(self) -> None:
@@ -414,7 +417,7 @@ class LaunchpadWindow(Gtk.Window):
         if p > 0.005:
             if not self.is_visible():
                 self.search_entry.set_text("")
-                self.show_all()
+                self.show()
                 GtkLayerShell.set_keyboard_mode(self, GtkLayerShell.KeyboardMode.EXCLUSIVE)
                 self.search_entry.grab_focus()
             self.set_opacity(p)
@@ -440,7 +443,7 @@ class LaunchpadWindow(Gtk.Window):
 
         if self.target_progress > 0.5 and not self.is_visible():
             self.search_entry.set_text("")
-            self.show_all()
+            self.show()
             GtkLayerShell.set_keyboard_mode(self, GtkLayerShell.KeyboardMode.EXCLUSIVE)
             self.search_entry.grab_focus()
             self.is_open = True
