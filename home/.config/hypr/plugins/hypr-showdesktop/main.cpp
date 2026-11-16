@@ -242,12 +242,19 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     }
 
     const auto matches = HyprlandAPI::findFunctionsByName(PHANDLE, "renderWindow");
-    if (matches.empty()) {
-        HyprlandAPI::addNotification(PHANDLE, "[hypr-showdesktop] renderWindow bulunamadı!", CHyprColor{1.0, 0.2, 0.2, 1.0}, 5000);
-        throw std::runtime_error("renderWindow not found");
+    void*      renderWindowAddr = nullptr;
+    for (const auto& m : matches) {
+        if (m.demangled.contains("IHyprRenderer::renderWindow")) {
+            renderWindowAddr = m.address;
+            break;
+        }
+    }
+    if (!renderWindowAddr) {
+        HyprlandAPI::addNotification(PHANDLE, "[hypr-showdesktop] IHyprRenderer::renderWindow bulunamadı!", CHyprColor{1.0, 0.2, 0.2, 1.0}, 5000);
+        throw std::runtime_error("IHyprRenderer::renderWindow not found");
     }
 
-    g_state.renderWindowHook = HyprlandAPI::createFunctionHook(PHANDLE, matches[0].address, reinterpret_cast<void*>(&hkRenderWindow));
+    g_state.renderWindowHook = HyprlandAPI::createFunctionHook(PHANDLE, renderWindowAddr, reinterpret_cast<void*>(&hkRenderWindow));
     if (!g_state.renderWindowHook || !g_state.renderWindowHook->hook()) {
         HyprlandAPI::addNotification(PHANDLE, "[hypr-showdesktop] renderWindow hook kurulamadı!", CHyprColor{1.0, 0.2, 0.2, 1.0}, 5000);
         throw std::runtime_error("Failed to hook renderWindow");
@@ -289,7 +296,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         restoreIfShown();
     });
 
-    return {"hypr-showdesktop", "macOS-style 1:1 4-finger pinch Show Desktop", "jarn", "2.0.1"};
+    return {"hypr-showdesktop", "macOS-style 1:1 4-finger pinch Show Desktop", "jarn", "2.0.2"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
