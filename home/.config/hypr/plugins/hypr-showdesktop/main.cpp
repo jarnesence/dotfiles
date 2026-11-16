@@ -1,6 +1,4 @@
 #include <hyprland/src/plugins/PluginAPI.hpp>
-#include <hyprland/src/managers/input/trackpad/TrackpadGestures.hpp>
-#include <hyprland/src/managers/input/trackpad/gestures/ITrackpadGesture.hpp>
 #include <hyprland/src/desktop/state/WindowState.hpp>
 #include <hyprland/src/desktop/state/FocusState.hpp>
 #include <hyprland/src/desktop/view/window/Window.hpp>
@@ -22,20 +20,25 @@ namespace {
                                     Render::eRenderPassMode, bool, bool);
 
     struct SShowDesktopState {
-        bool                              gesturing       = false;
-        bool                              animating       = false;
-        bool                              desktopShown    = false;
-        float                             currentProgress = 0.0F; // 0.0 = normal, 1.0 = scattered
-        float                             targetProgress  = 0.0F;
-        PHLMONITORREF                     activeMonitor;
+        bool                                  gesturing       = false;
+        bool                                  animating       = false;
+        bool                                  desktopShown    = false;
+        bool                                  startShown      = false;
+        float                                 startProgress   = 0.0F;
+        float                                 startScale      = 1.0F;
+        float                                 currentProgress = 0.0F; // 0.0 = normal, 1.0 = scattered
+        float                                 targetProgress  = 0.0F;
+        PHLMONITORREF                         activeMonitor;
         std::chrono::steady_clock::time_point lastTick = std::chrono::steady_clock::now();
 
-        CFunctionHook*                    renderWindowHook = nullptr;
-        CHyprSignalListener               renderPreListener;
-        CHyprSignalListener               renderStageListener;
-        CHyprSignalListener               configReloadListener;
-        CHyprSignalListener               windowOpenListener;
-        CHyprSignalListener               workspaceChangeListener;
+        CFunctionHook*                        renderWindowHook = nullptr;
+        CHyprSignalListener                   pinchBeginListener;
+        CHyprSignalListener                   pinchUpdateListener;
+        CHyprSignalListener                   pinchEndListener;
+        CHyprSignalListener                   renderPreListener;
+        CHyprSignalListener                   renderStageListener;
+        CHyprSignalListener                   windowOpenListener;
+        CHyprSignalListener                   workspaceChangeListener;
     } g_state;
 
     // Deterministic diagonal/radial explosion offset so every window bursts toward
@@ -155,72 +158,6 @@ namespace {
         origFn(thisptr, ctx, pWindow, pMonitor, presentation, now, allowDim, mode, ignorePosition, standalone);
     }
 
-    class CShowDesktopGesture final : public ITrackpadGesture {
-      public:
-        void begin(const STrackpadGestureBegin& e) override {
-            ITrackpadGesture::begin(e);
-            g_state.gesturing     = true;
-            g_state.animating     = false;
-            g_state.activeMonitor = Desktop::focusState()->monitor();
-
-            m_startShown    = g_state.desktopShown;
-            m_startProgress = g_state.currentProgress;
-            m_startScale    = e.pinch ? static_cast<float>(e.pinch->scale) : e.scale;
-            if (m_startScale <= 0.01F)
-                m_startScale = 1.0F;
-        }
-
-        void update(const STrackpadGestureUpdate& e) override {
-            const float rawScale = e.pinch ? static_cast<float>(e.pinch->scale) : e.scale;
-            const float relScale = std::max(0.1F, rawScale / m_startScale);
-
-            // Symmetric log2 mapping with strict [0.0, 1.0] peak clamping + instant re-anchoring
-            // so windows never overshoot inward/outward and reverse immediately with zero dead-zone.
-            const float deltaP = std::log2(relScale) * 1.45F;
-            const float rawP   = m_startProgress + deltaP;
-
-            if (rawP > 1.0F) {
-                g_state.currentProgress = 1.0F;
-                m_startProgress         = 1.0F;
-                m_startScale            = std::max(0.01F, rawScale);
-            } else if (rawP < 0.0F) {
-                g_state.currentProgress = 0.0F;
-                m_startProgress         = 0.0F;
-                m_startScale            = std::max(0.01F, rawScale);
-            } else {
-                g_state.currentProgress = rawP;
-            }
-
-            damageActiveMonitor();
-        }
-
-        void end(const STrackpadGestureEnd& e) override {
-            g_state.gesturing    = false;
-            const bool cancelled = e.pinch && e.pinch->cancelled;
-
-            if (cancelled) {
-                startAnimationTo(m_startShown);
-                return;
-            }
-
-            if (!m_startShown) {
-                startAnimationTo(g_state.currentProgress > 0.25F);
-            } else {
-                startAnimationTo(g_state.currentProgress > 0.75F);
-            }
-        }
-
-      private:
-        bool  m_startShown    = false;
-        float m_startProgress = 0.0F;
-        float m_startScale    = 1.0F;
-    };
-
-    void registerShowDesktopGesture() {
-        (void)g_pTrackpadGestures->addGesture(makeUnique<CShowDesktopGesture>(), 4, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
-        (void)g_pTrackpadGestures->addGesture(makeUnique<CShowDesktopGesture>(), 5, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
-    }
-
     SDispatchResult dispatchShowDesktop(std::string args) {
         g_state.activeMonitor = Desktop::focusState()->monitor();
         startAnimationTo(!g_state.desktopShown);
@@ -243,7 +180,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         throw std::runtime_error("Version mismatch");
     }
 
-    const auto matches = HyprlandAPI::findFunctionsByName(PHANDLE, "renderWindow");
+    const auto matches          = HyprlandAPI::findFunctionsByName(PHANDLE, "renderWindow");
     void*      renderWindowAddr = nullptr;
     for (const auto& m : matches) {
         if (m.demangled.contains("IHyprRenderer::renderWindow")) {
@@ -262,8 +199,65 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         throw std::runtime_error("Failed to hook renderWindow");
     }
 
-    registerShowDesktopGesture();
     HyprlandAPI::addDispatcherV2(PHANDLE, "showdesktop", dispatchShowDesktop);
+
+    // Direct raw libinput pinch events (zero deadzone, 100% reliable for 4 and 5 fingers)
+    g_state.pinchBeginListener = Event::bus()->m_events.gesture.pinch.begin.listen([](const IPointer::SPinchBeginEvent& e, Event::SCallbackInfo& info) {
+        if (e.fingers < 4)
+            return;
+
+        info.cancelled        = true;
+        g_state.gesturing     = true;
+        g_state.animating     = false;
+        g_state.activeMonitor = Desktop::focusState()->monitor();
+        g_state.startShown    = g_state.desktopShown;
+        g_state.startProgress = g_state.currentProgress;
+        g_state.startScale    = 1.0F;
+    });
+
+    g_state.pinchUpdateListener = Event::bus()->m_events.gesture.pinch.update.listen([](const IPointer::SPinchUpdateEvent& e, Event::SCallbackInfo& info) {
+        if (!g_state.gesturing)
+            return;
+
+        info.cancelled       = true;
+        const float rawScale = static_cast<float>(e.scale);
+        const float relScale = std::max(0.1F, rawScale / g_state.startScale);
+
+        const float deltaP = std::log2(relScale) * 1.45F;
+        const float rawP   = g_state.startProgress + deltaP;
+
+        if (rawP > 1.0F) {
+            g_state.currentProgress = 1.0F;
+            g_state.startProgress   = 1.0F;
+            g_state.startScale      = std::max(0.01F, rawScale);
+        } else if (rawP < 0.0F) {
+            g_state.currentProgress = 0.0F;
+            g_state.startProgress   = 0.0F;
+            g_state.startScale      = std::max(0.01F, rawScale);
+        } else {
+            g_state.currentProgress = rawP;
+        }
+
+        damageActiveMonitor();
+    });
+
+    g_state.pinchEndListener = Event::bus()->m_events.gesture.pinch.end.listen([](const IPointer::SPinchEndEvent& e, Event::SCallbackInfo& info) {
+        if (!g_state.gesturing)
+            return;
+
+        info.cancelled    = true;
+        g_state.gesturing = false;
+
+        if (e.cancelled) {
+            startAnimationTo(g_state.startShown);
+            return;
+        }
+
+        if (!g_state.startShown)
+            startAnimationTo(g_state.currentProgress > 0.25F);
+        else
+            startAnimationTo(g_state.currentProgress > 0.75F);
+    });
 
     g_state.renderPreListener = Event::bus()->m_events.render.pre.listen([](PHLMONITOR pMonitor) {
         if (!g_state.animating)
@@ -277,7 +271,6 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         const float dt  = std::clamp(std::chrono::duration<float>(now - g_state.lastTick).count(), 0.0005F, 0.05F);
         g_state.lastTick = now;
 
-        // Exponential spring-out curve (snappy, macOS-like deceleration at monitor refresh rate)
         constexpr float SPEED = 16.0F;
         const float     alpha = 1.0F - std::exp(-SPEED * dt);
         g_state.currentProgress += (g_state.targetProgress - g_state.currentProgress) * alpha;
@@ -297,10 +290,6 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
             g_pHyprRenderer->damageMonitor(e.monitor);
     });
 
-    g_state.configReloadListener = Event::bus()->m_events.config.reloaded.listen([]() {
-        registerShowDesktopGesture();
-    });
-
     g_state.windowOpenListener = Event::bus()->m_events.window.open.listen([](PHLWINDOW) {
         restoreIfShown();
     });
@@ -309,7 +298,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         restoreIfShown();
     });
 
-    return {"hypr-showdesktop", "macOS-style 1:1 4/5-finger pinch Show Desktop", "jarn", "2.0.4"};
+    return {"hypr-showdesktop", "macOS-style 1:1 4/5-finger pinch Show Desktop", "jarn", "2.0.5"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
@@ -319,11 +308,11 @@ APICALL EXPORT void PLUGIN_EXIT() {
     g_state.currentProgress = 0.0F;
     damageActiveMonitor();
 
-    (void)g_pTrackpadGestures->removeGesture(4, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
-    (void)g_pTrackpadGestures->removeGesture(5, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
+    g_state.pinchBeginListener.reset();
+    g_state.pinchUpdateListener.reset();
+    g_state.pinchEndListener.reset();
     g_state.renderPreListener.reset();
     g_state.renderStageListener.reset();
-    g_state.configReloadListener.reset();
     g_state.windowOpenListener.reset();
     g_state.workspaceChangeListener.reset();
 

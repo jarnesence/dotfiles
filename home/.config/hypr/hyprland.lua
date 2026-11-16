@@ -59,7 +59,7 @@ end
 -- "no"     : blur kapalı, tüm pencereler tam opak (1.0)
 -- "hybrid" : sadece kitty'nin olduğu workspace'te ve sadece kitty'ye blur; diğer uygulamalar tam opak (1.0)
 -- "full"   : tüm pencerelerde blur + terminal şeffaflığı (0.86)
-local BLUR_MODE = "no"
+local BLUR_MODE = "hybrid"
 -- "0" | "az" | "orta" | "cok"
 local BLUR_LEVEL = "0"
 local BLUR_LEVELS = {
@@ -290,6 +290,9 @@ elseif BLUR_MODE == "full" then
     -- çarpılıp 0.74'e düşmemesi için Hyprland opaklık çarpanını 1.0'da tut.
     hl.window_rule({ name = "kitty-full-opacity",    match = { class = "^kitty$" },               opacity = "1.0 override" })
     hl.window_rule({ name = "nautilus-full-opacity", match = { class = "^org\\.gnome\\.Nautilus$" }, opacity = "1.0 override" })
+else
+    -- "no": tüm pencereler (kitty'nin kendi background_opacity ayarı dahil) tam opak
+    hl.window_rule({ name = "opaque-all-no-blur", match = { class = ".*" }, opaque = true })
 end
 
 -- DHU: preserve the BMW Z4 G29 display ratio instead of tiling/stretching.
