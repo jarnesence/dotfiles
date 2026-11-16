@@ -62,6 +62,17 @@ layout_menu() {
     pause
 }
 
+SD_FLAG="$HOME/.config/hypr/showdesktop.enabled"
+LP_FLAG="$HOME/.config/hypr/launchpad.enabled"
+flag_state() { [ -f "$1" ] && [ "$(cat "$1" 2>/dev/null)" = "1" ] && echo on || echo off; }
+toggle_flag() {
+    if [ "$(flag_state "$1")" = on ]; then
+        printf '0\n' > "$1"
+    else
+        printf '1\n' > "$1"
+    fi
+}
+
 touchpad_menu() {
     local sel
     while true; do
@@ -71,6 +82,9 @@ touchpad_menu() {
             "$(item dwt  "󰌌" "Disable while typing"  "$(opt input:touchpad:disable_while_typing)")" \
             "$(item drag "󰩰" "Drag lock"             "$( [ "$(opt input:touchpad:drag_lock)" = 0 ] && echo off || echo on)")" \
             "$(item sf   "󰈈" "Scroll speed"          "$(opt input:touchpad:scroll_factor)")" \
+            "$(sep)" \
+            "$(item sd   "󰍹" "Show Desktop (pinch out)" "$(flag_state "$SD_FLAG")")" \
+            "$(item lp   "󰀻" "Launchpad (pinch in)"     "$(flag_state "$LP_FLAG")")" \
             "$(sep)" \
             "$(r save "󰆓  Save to config")" \
             "$(r back "󰌍  Back")")
@@ -84,6 +98,14 @@ touchpad_menu() {
             sf)   title "Scroll speed"; dim "1.0 = default, lower is slower"
                   ask "scroll_factor" "$(opt input:touchpad:scroll_factor)" \
                       && set_opt input:touchpad:scroll_factor "$ANSWER"; pause ;;
+            sd)   toggle_flag "$SD_FLAG" ;;
+            lp)   toggle_flag "$LP_FLAG"
+                  if [ "$(flag_state "$LP_FLAG")" = on ]; then
+                      pgrep -f "@HOME@/.config/hypr/scripts/launchpad.py" >/dev/null 2>&1 \
+                          || setsid -f @HOME@/.config/hypr/scripts/launchpad.py >/dev/null 2>&1
+                  else
+                      pkill -f "@HOME@/.config/hypr/scripts/launchpad.py" 2>/dev/null || true
+                  fi ;;
             save) persist ;;
             back|'') return ;;
         esac

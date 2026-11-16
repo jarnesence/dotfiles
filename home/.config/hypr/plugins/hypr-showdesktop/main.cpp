@@ -56,6 +56,8 @@ namespace {
         int                                   lpSockFd        = -1;
         std::string                           lpSockPath;
         std::string                           lpStatePath;
+        std::string                           sdEnabledPath;
+        std::string                           lpEnabledPath;
         PHLMONITORREF                         activeMonitor;
         std::chrono::steady_clock::time_point lastTick = std::chrono::steady_clock::now();
 
@@ -70,22 +72,38 @@ namespace {
     } g_state;
 
     void initLaunchpadIPC() {
-        const char* xdg = std::getenv("XDG_RUNTIME_DIR");
-        std::string dir = xdg ? std::string{xdg} : ("/run/user/" + std::to_string(getuid()));
-        g_state.lpSockPath  = dir + "/hypr-launchpad.sock";
-        g_state.lpStatePath = dir + "/hypr-launchpad.state";
-        g_state.lpSockFd    = socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+        const char* xdg  = std::getenv("XDG_RUNTIME_DIR");
+        const char* home = std::getenv("HOME");
+        std::string dir  = xdg ? std::string{xdg} : ("/run/user/" + std::to_string(getuid()));
+        std::string hdir = home ? std::string{home} : "";
+        g_state.lpSockPath    = dir + "/hypr-launchpad.sock";
+        g_state.lpStatePath   = dir + "/hypr-launchpad.state";
+        g_state.sdEnabledPath = hdir.empty() ? "" : (hdir + "/.config/hypr/showdesktop.enabled");
+        g_state.lpEnabledPath = hdir.empty() ? "" : (hdir + "/.config/hypr/launchpad.enabled");
+        g_state.lpSockFd      = socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
     }
 
-    bool isLaunchpadOpen() {
-        if (g_state.lpStatePath.empty())
+    bool readFlagFile(const std::string& path) {
+        if (path.empty())
             return false;
-        FILE* f = std::fopen(g_state.lpStatePath.c_str(), "r");
+        FILE* f = std::fopen(path.c_str(), "r");
         if (!f)
             return false;
         int ch = std::fgetc(f);
         std::fclose(f);
         return ch == '1';
+    }
+
+    bool isLaunchpadOpen() {
+        return readFlagFile(g_state.lpStatePath);
+    }
+
+    bool isShowDesktopEnabled() {
+        return readFlagFile(g_state.sdEnabledPath);
+    }
+
+    bool isLaunchpadEnabled() {
+        return readFlagFile(g_state.lpEnabledPath);
     }
 
     void sendLaunchpadCmd(const std::string& cmd) {
@@ -328,6 +346,14 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         if (e.fingers < 3)
             return;
 
+        const bool sdActive = g_state.desktopShown || g_state.currentProgress > 0.01F;
+        const bool lpActive = isLaunchpadOpen() || g_state.lpProgress > 0.01F;
+        const bool sdOn     = isShowDesktopEnabled();
+        const bool lpOn     = isLaunchpadEnabled();
+
+        if (!sdActive && !lpActive && !sdOn && !lpOn)
+            return;
+
         info.cancelled        = true;
         g_state.gesturing     = true;
         g_state.animating     = false;
@@ -336,11 +362,11 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         g_state.startScale    = 1.0F;
         g_state.lastSentLp    = -1.0F;
 
-        if (g_state.desktopShown || g_state.currentProgress > 0.01F) {
+        if (sdActive) {
             g_state.gestureMode   = MODE_SHOW_DESKTOP;
             g_state.startShown    = g_state.desktopShown;
             g_state.startProgress = g_state.currentProgress;
-        } else if (isLaunchpadOpen() || g_state.lpProgress > 0.01F) {
+        } else if (lpActive) {
             g_state.gestureMode   = MODE_LAUNCHPAD;
             g_state.startShown    = true;
             g_state.startProgress = (g_state.lpProgress > 0.01F) ? g_state.lpProgress : 1.0F;
@@ -362,10 +388,20 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 
         if (g_state.gestureMode == MODE_UNDECIDED) {
             if (rawScale > 1.025F) {
+                if (!isShowDesktopEnabled()) {
+                    g_state.gesturing   = false;
+                    g_state.gestureMode = MODE_NONE;
+                    return;
+                }
                 g_state.gestureMode   = MODE_SHOW_DESKTOP;
                 g_state.startProgress = 0.0F;
                 g_state.startScale    = rawScale;
             } else if (rawScale < 0.975F) {
+                if (!isLaunchpadEnabled()) {
+                    g_state.gesturing   = false;
+                    g_state.gestureMode = MODE_NONE;
+                    return;
+                }
                 g_state.gestureMode   = MODE_LAUNCHPAD;
                 g_state.startProgress = 0.0F;
                 g_state.startScale    = rawScale;
@@ -501,7 +537,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         restoreIfShown();
     });
 
-    return {"hypr-showdesktop", "macOS-style 1:1 Show Desktop + Launchpad", "jarn", "2.1.2"};
+    return {"hypr-showdesktop", "macOS-style 1:1 Show Desktop + Launchpad", "jarn", "2.1.3"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
