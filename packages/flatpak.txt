@@ -1,6 +1,6 @@
 # Flathub apps
 com.opera.Opera
-com.tutanota.Tutanota
+com.spotify.Client
 io.github.celluloid_player.Celluloid
 org.gnome.Calculator
 org.gnome.Loupe

@@ -256,7 +256,7 @@ Bu parametreler bootloader'a göre farklı yere yazılır (Limine/UKI: `/etc/ker
 | `Super+Space` | uygulama başlatıcı (fzf TUI) |
 | `Super+,` | **Ayarlar TUI** (Wi-Fi, Bluetooth, DND, güç profili, ağ & DNS, ses, ekran, görünüm, giriş, güç, bildirim, sistem, yazılım, güvenlik, Hyprland) |
 | `Super+B` | sistem tepsisi TUI (tray-hostd servisi) |
-| `Super+N` | Spotify TUI (spotify-player) |
+| `Super+N` | Spotify (resmi uygulama, Flathub) |
 | `Super+.` / `Super+Shift+.` | sonraki/önceki duvar kağıdı (palet de yenilenir) |
 | `Super+Shift+Q` | güç menüsü TUI |
 | `Super+Q` / `Super+C` | pencere kapat · `Super+W` float · `Super+F` tam ekran · `Super+J` split |
@@ -283,7 +283,7 @@ python3 -m py_compile ~/.config/hypr/scripts/*.py
 # eksik komutlar (TUI'lerin çağırdığı her araç kurulu mu)
 for c in hyprctl awww matugen eww mako makoctl kitty fzf jq nmcli wpctl brightnessctl \
          powerprofilesctl grim slurp swappy hyprpicker hypridle wiremix bluetuith btop \
-         spotify_player nautilus google-chrome-stable fastfetch zoxide trash-put; do
+         nautilus google-chrome-stable fastfetch zoxide trash-put; do
   command -v $c >/dev/null || echo "EKSİK: $c"; done
 systemctl --failed ; systemctl --user --failed
 ls -l /etc/resolv.conf ; resolvectl query archlinux.org | tail -2
@@ -308,8 +308,6 @@ Kurma, önerme:
 - sudoers NOPASSWD. **[SOR]** kullanıcı açıkça isterse `/etc/sudoers.d/00_$USER` ile ekle (`visudo -c` ile doğrula).
 - VPN/WARP/tailscale: kaynakta bilerek yok; ekleme.
 - Ses: stok PipeWire. EasyEffects vb. ekleme; kartın `surround*` profillerini seçme.
-- Spotify `client_id` kaldırıldı (spotify-player kendi varsayılanını kullanır; kullanıcı
-  `spotify_player authenticate` ile giriş yapar).
 
 ---
 

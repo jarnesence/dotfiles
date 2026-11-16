@@ -484,9 +484,7 @@ x-scheme-handler/claude=claude.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
 x-scheme-handler/http=google-chrome.desktop
 x-scheme-handler/https=google-chrome.desktop
-x-scheme-handler/mailto=com.tutanota.Tutanota.desktop
 x-scheme-handler/proton-inbox=proton-mail.desktop
-x-scheme-handler/tuta=com.tutanota.Tutanota.desktop
 x-scheme-handler/unknown=google-chrome.desktop
 
 [Added Associations]
@@ -975,6 +973,4 @@ x-scheme-handler/claude=claude.desktop;
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop;
 x-scheme-handler/http=google-chrome.desktop;
 x-scheme-handler/https=google-chrome.desktop;
-x-scheme-handler/mailto=com.tutanota.Tutanota.desktop;
-x-scheme-handler/tuta=com.tutanota.Tutanota.desktop;
 x-scheme-handler/unknown=google-chrome.desktop;
