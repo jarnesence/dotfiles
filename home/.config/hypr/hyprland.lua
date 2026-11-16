@@ -252,6 +252,7 @@ hl.window_rule({ name = "float-tui", match = { class = "tui-.*" }, float = true,
 ------------------ LAYER RULES ---------------
 -- eww blur'u KAPATILDI (2026-06-07, performans): OSD/saat artık buzlu cam değil, düz yarı saydam.
 -- Geri istenirse: hl.layer_rule({ name = "blur-eww", match = { namespace = "gtk-layer-shell" }, blur = true, ignore_alpha = 0.4 })
+hl.layer_rule({ name = "blur-launchpad", match = { namespace = "hypr-launchpad" }, blur = true, ignore_alpha = 0.0 })
 
 ------------------ BLUR MODU ("no" | "hybrid" | "full") ---------------------
 -- "hybrid": Blur, aktif workspace'te en az bir kitty penceresi varsa açılır; yoksa kapalı →

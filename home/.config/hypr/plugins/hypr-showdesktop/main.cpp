@@ -48,6 +48,11 @@ namespace {
         float                                 lpProgress      = 0.0F; // Launchpad: 0.0 = closed, 1.0 = open
         float                                 lpTarget        = 0.0F;
         float                                 lastSentLp      = -1.0F;
+        bool                                  blurSaved       = false;
+        std::string                           savedBlurEnabled;
+        std::string                           savedBlurSize;
+        std::string                           savedBlurPasses;
+        int                                   lastBlurSize    = -1;
         int                                   lpSockFd        = -1;
         std::string                           lpSockPath;
         std::string                           lpStatePath;
@@ -101,6 +106,43 @@ namespace {
         char buf[32];
         std::snprintf(buf, sizeof(buf), "p %.3f", p);
         sendLaunchpadCmd(buf);
+    }
+
+    std::string parseOptionVal(const std::string& optOut, const std::string& prefix) {
+        const auto pos = optOut.find(prefix);
+        if (pos == std::string::npos)
+            return "";
+        const auto start = pos + prefix.size();
+        const auto end   = optOut.find('\n', start);
+        return optOut.substr(start, end == std::string::npos ? std::string::npos : end - start);
+    }
+
+    void updateLaunchpadBlur(float p) {
+        if (p > 0.02F) {
+            if (!g_state.blurSaved) {
+                g_state.savedBlurEnabled = parseOptionVal(HyprlandAPI::invokeHyprctlCommand("getoption", "decoration:blur:enabled"), "bool: ");
+                g_state.savedBlurSize    = parseOptionVal(HyprlandAPI::invokeHyprctlCommand("getoption", "decoration:blur:size"), "int: ");
+                g_state.savedBlurPasses  = parseOptionVal(HyprlandAPI::invokeHyprctlCommand("getoption", "decoration:blur:passes"), "int: ");
+                g_state.blurSaved        = true;
+                g_state.lastBlurSize     = -1;
+                HyprlandAPI::invokeHyprctlCommand("keyword", "decoration:blur:enabled true");
+                HyprlandAPI::invokeHyprctlCommand("keyword", "decoration:blur:passes 2");
+            }
+            const int sz = std::clamp(static_cast<int>(std::round(p * 8.0F)), 1, 8);
+            if (sz != g_state.lastBlurSize) {
+                g_state.lastBlurSize = sz;
+                HyprlandAPI::invokeHyprctlCommand("keyword", "decoration:blur:size " + std::to_string(sz));
+            }
+        } else if (g_state.blurSaved) {
+            if (!g_state.savedBlurSize.empty())
+                HyprlandAPI::invokeHyprctlCommand("keyword", "decoration:blur:size " + g_state.savedBlurSize);
+            if (!g_state.savedBlurPasses.empty())
+                HyprlandAPI::invokeHyprctlCommand("keyword", "decoration:blur:passes " + g_state.savedBlurPasses);
+            if (!g_state.savedBlurEnabled.empty())
+                HyprlandAPI::invokeHyprctlCommand("keyword", "decoration:blur:enabled " + g_state.savedBlurEnabled);
+            g_state.blurSaved    = false;
+            g_state.lastBlurSize = -1;
+        }
     }
 
     Vector2D computeScatterOffset(const Vector2D& winPos, const Vector2D& winSize, const Vector2D& monPos, const Vector2D& monSize, size_t idx) {
@@ -219,10 +261,10 @@ namespace {
                         modPres.floatingOffset += offset * static_cast<double>(g_state.currentProgress);
                     }
 
-                    // As Launchpad opens (0% -> 70%), fade out windows behind it so only
-                    // the wallpaper remains visible behind Launchpad at >= 70%.
+                    // As Launchpad opens (0% -> 90%), fade out windows behind it so only
+                    // the blurred wallpaper remains visible behind Launchpad at >= 90%.
                     if (g_state.lpProgress > 0.0005F) {
-                        const float winAlpha = std::clamp(1.0F - (g_state.lpProgress / 0.70F), 0.0F, 1.0F);
+                        const float winAlpha = std::clamp(1.0F - (g_state.lpProgress / 0.90F), 0.0F, 1.0F);
                         if (winAlpha <= 0.001F)
                             return;
                         modPres.alpha *= winAlpha;
@@ -367,6 +409,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
             }
 
             sendLaunchpadProgressThrottled(g_state.lpProgress);
+            updateLaunchpadBlur(g_state.lpProgress);
             damageActiveMonitor();
         }
     });
@@ -437,6 +480,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
                 g_state.lpProgress  = g_state.lpTarget;
                 g_state.lpAnimating = false;
             }
+            updateLaunchpadBlur(g_state.lpProgress);
         }
     });
 
@@ -457,7 +501,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         restoreIfShown();
     });
 
-    return {"hypr-showdesktop", "macOS-style 1:1 Show Desktop + Launchpad", "jarn", "2.1.1"};
+    return {"hypr-showdesktop", "macOS-style 1:1 Show Desktop + Launchpad", "jarn", "2.1.2"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
@@ -467,6 +511,7 @@ APICALL EXPORT void PLUGIN_EXIT() {
     g_state.desktopShown    = false;
     g_state.currentProgress = 0.0F;
     g_state.lpProgress      = 0.0F;
+    updateLaunchpadBlur(0.0F);
     damageActiveMonitor();
 
     if (g_state.lpSockFd >= 0) {
