@@ -1,0 +1,7 @@
+# AUR (installed with paru; paru itself is bootstrapped first)
+bibata-cursor-theme
+bluetuith-bin
+eww
+google-chrome
+ttf-google-sans
+claude-desktop-bin

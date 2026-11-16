@@ -1,0 +1,35 @@
+[config]
+
+# Hyprland pencere kenarları — colors.lua'yı hyprland.lua dofile ile okur, post_hook reload eder
+[templates.hyprland]
+input_path  = "@HOME@/.config/matugen/templates/hypr-colors.lua"
+output_path = "@HOME@/.config/hypr/colors.lua"
+post_hook   = "hyprctl reload >/dev/null 2>&1 || true"
+
+# eww saat/batarya widget
+[templates.eww]
+input_path  = "@HOME@/.config/matugen/templates/eww-colors.scss"
+output_path = "@HOME@/.config/eww/colors.scss"
+post_hook   = "eww reload >/dev/null 2>&1 || true"
+
+# kitty terminal (canlı reload USR1 ile)
+[templates.kitty]
+input_path  = "@HOME@/.config/matugen/templates/kitty-colors.conf"
+output_path = "@HOME@/.config/kitty/colors.conf"
+post_hook   = "pkill -USR1 -x kitty 2>/dev/null || true"
+
+# GTK3 uygulamaları (adw-gtk3) — libadwaita named-color override'ları
+[templates.gtk3]
+input_path  = "@HOME@/.config/matugen/templates/gtk-colors.css"
+output_path = "@HOME@/.config/gtk-3.0/gtk.css"
+
+# GTK4 / libadwaita uygulamaları (nautilus vb.)
+[templates.gtk4]
+input_path  = "@HOME@/.config/matugen/templates/gtk-colors.css"
+output_path = "@HOME@/.config/gtk-4.0/gtk.css"
+
+# mako bildirimleri — OSD ile aynı görünüm; renkler wallpaper paletiyle güncellenir
+[templates.mako]
+input_path  = "@HOME@/.config/matugen/templates/mako-config"
+output_path = "@HOME@/.config/mako/config"
+post_hook   = "makoctl reload >/dev/null 2>&1 || true"

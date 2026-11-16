@@ -1,0 +1,36 @@
+{
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Ayu Dark"
+  },
+  "icon_theme": "Zed (Default)",
+  "ui_font_family": "Google Sans",
+  "ui_font_size": 15,
+  "buffer_font_family": "JetBrainsMono Nerd Font",
+  "buffer_font_size": 14,
+  "buffer_line_height": "comfortable",
+  "buffer_font_features": { "calt": true, "liga": true },
+  "cursor_blink": false,
+  "current_line_highlight": "gutter",
+  "scrollbar": { "show": "auto" },
+  "minimap": { "show": "auto" },
+  "indent_guides": { "enabled": true, "coloring": "indent_aware" },
+  "inlay_hints": { "enabled": true },
+  "soft_wrap": "editor_width",
+  "tab_bar": { "show_nav_history_buttons": false },
+  "tabs": { "file_icons": true, "git_status": true },
+  "title_bar": { "show_branch_icon": true },
+  "project_panel": { "dock": "left", "indent_size": 16 },
+  "autosave": "on_focus_change",
+  "format_on_save": "on",
+  "restore_on_startup": "last_session",
+  "telemetry": { "diagnostics": false, "metrics": false },
+  "languages": {
+    "Markdown": {
+      "soft_wrap": "editor_width",
+      "show_whitespaces": "none",
+      "format_on_save": "off"
+    }
+  }
+}

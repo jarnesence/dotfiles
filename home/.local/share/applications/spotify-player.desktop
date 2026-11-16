@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Spotify
+GenericName=Music Player
+Comment=spotify-player TUI (kitty, float)
+Exec=kitty --class tui-spotify -e spotify_player
+Icon=spotify-player
+Terminal=false
+Categories=Audio;AudioVideo;Player;Music;
+Keywords=spotify;music;tui;player;

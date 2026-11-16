@@ -1,0 +1,131 @@
+#!/usr/bin/python3 -I
+"""wifi-band-prefer — move from 2.4 GHz to the same network's 5/6 GHz AP.
+
+wpa_supplicant (as driven by NetworkManager) only looks for a better AP when
+the current signal drops below its bgscan threshold (-65 dBm). A strong but
+narrow 2.4 GHz link (e.g. -51 dBm @ 20 MHz ≈ 260 Mbit/s) therefore never gets
+replaced by the same SSID's 5 GHz AP (e.g. -70 dBm @ 160 MHz ≈ 860 Mbit/s).
+
+This daemon asks wpa_supplicant to *roam* (fi.w1.wpa_supplicant1.Interface.Roam)
+to the best 5/6 GHz BSS of the SAME SSID when its signal is good enough.
+A roam is a reassociation inside the same network: the NM profile stays up,
+the IP address is kept, connections survive (measured gap ≈ 40 ms).
+
+Falling back to 2.4 GHz when 5 GHz gets weak is left to wpa_supplicant itself;
+after it does so we back off for COOLDOWN_S so the two never ping-pong.
+Generic: works for any SSID on any interface managed by wpa_supplicant.
+"""
+import json
+import subprocess
+import sys
+import time
+
+SVC = "fi.w1.wpa_supplicant1"
+ROOT = "/fi/w1/wpa_supplicant1"
+IFACE = "fi.w1.wpa_supplicant1.Interface"
+BSS = "fi.w1.wpa_supplicant1.BSS"
+
+MIN_DBM = -75          # a 5/6 GHz candidate must be at least this strong
+STRONG_DBM = -65       # strong enough to ignore the back-off
+MAX_AGE_S = 30         # only trust scan results this fresh
+SCAN_EVERY_S = 120     # active scan cadence while stuck on 2.4 GHz
+COOLDOWN_S = 600       # back-off after wpa_supplicant fell back to 2.4 GHz
+TICK_S = 15
+
+
+def log(msg):
+    print(msg, flush=True)
+
+
+def busctl(*args):
+    r = subprocess.run(["busctl", "--system", "--json=short", *args],
+                       capture_output=True, text=True, timeout=10)
+    if r.returncode != 0:
+        raise RuntimeError(r.stderr.strip() or "busctl failed")
+    return [json.loads(l)["data"] for l in r.stdout.splitlines() if l.strip()]
+
+
+def props(path, iface, *names):
+    return dict(zip(names, busctl("get-property", SVC, path, iface, *names)))
+
+
+def is_hi(freq):
+    return freq >= 4900          # 5 GHz and 6 GHz
+
+
+def mac(b):
+    return ":".join(f"{x:02x}" for x in b)
+
+
+class Link:
+    def __init__(self):
+        self.was_hi = None
+        self.cooldown_until = 0.0
+        self.last_scan = 0.0
+        self.roamed_at = 0.0
+
+
+links = {}
+
+
+def handle(ipath):
+    st = links.setdefault(ipath, Link())
+    p = props(ipath, IFACE, "State", "CurrentBSS", "BSSs", "Ifname")
+    if p["State"] != "completed" or p["CurrentBSS"] == "/":
+        st.was_hi = None
+        return
+    cur = props(p["CurrentBSS"], BSS, "SSID", "BSSID", "Frequency", "Signal")
+    now = time.monotonic()
+    hi = is_hi(cur["Frequency"])
+
+    # wpa_supplicant moved us back to 2.4 GHz on its own → back off.
+    if st.was_hi and not hi and now - st.roamed_at > 5:
+        st.cooldown_until = now + COOLDOWN_S
+        log(f"{p['Ifname']}: supplicant fell back to {cur['Frequency']} MHz "
+            f"({cur['Signal']} dBm); backing off {COOLDOWN_S}s")
+    st.was_hi = hi
+    if hi:
+        return
+
+    best = None
+    for bp in p["BSSs"]:
+        try:
+            b = props(bp, BSS, "SSID", "BSSID", "Frequency", "Signal", "Age")
+        except RuntimeError:
+            continue                      # BSS expired between calls
+        if (b["SSID"] == cur["SSID"] and is_hi(b["Frequency"])
+                and b["Age"] <= MAX_AGE_S
+                and (best is None or b["Signal"] > best["Signal"])):
+            best = b
+
+    if best and best["Signal"] >= MIN_DBM and (
+            now >= st.cooldown_until or best["Signal"] >= STRONG_DBM):
+        ssid = bytes(cur["SSID"]).decode(errors="replace")
+        log(f"{p['Ifname']}: '{ssid}' {cur['Frequency']} MHz {cur['Signal']} dBm"
+            f" -> {mac(best['BSSID'])} {best['Frequency']} MHz {best['Signal']} dBm (roam)")
+        busctl("call", SVC, ipath, IFACE, "Roam", "s", mac(best["BSSID"]))
+        st.roamed_at = now
+        st.was_hi = True
+        return
+
+    if now - st.last_scan >= SCAN_EVERY_S:
+        st.last_scan = now
+        busctl("call", SVC, ipath, IFACE, "Scan", "a{sv}", "1", "Type", "s", "active")
+
+
+def main():
+    log(f"wifi-band-prefer: min {MIN_DBM} dBm, scan every {SCAN_EVERY_S}s on 2.4 GHz")
+    while True:
+        try:
+            for ipath in busctl("get-property", SVC, ROOT, SVC, "Interfaces")[0]:
+                try:
+                    handle(ipath)
+                except (RuntimeError, KeyError, subprocess.TimeoutExpired) as e:
+                    log(f"{ipath}: {e}")
+        except (RuntimeError, subprocess.TimeoutExpired):
+            pass                          # supplicant not running right now
+        time.sleep(TICK_S)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

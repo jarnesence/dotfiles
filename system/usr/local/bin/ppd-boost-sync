@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# ppd-boost-sync: CPU turbo/boost'u power-profiles-daemon profiline bağlar.
+#   power-saver  -> boost KAPALI
+#   diğer profiller (balanced/performance) -> boost AÇIK
+#
+# NOT: Yalnızca per-policy düğümlere (policyN/boost) yazılır; global
+# /sys/.../cpufreq/boost düğümüne DOKUNULMAZ. Global'i 0 yapmak PPD'nin
+# profil geçişini "Invalid argument" ile kırıyor (PPD de per-policy yazıyor).
+set -u
+
+DEST=net.hadess.PowerProfiles
+OBJ=/net/hadess/PowerProfiles
+
+current_profile() {
+    gdbus call --system --dest "$DEST" --object-path "$OBJ" \
+        --method org.freedesktop.DBus.Properties.Get \
+        "$DEST" ActiveProfile 2>/dev/null
+}
+
+apply() {
+    local p val=1
+    p=$(current_profile)
+    [ -z "$p" ] && return 0
+    case "$p" in
+        *power-saver*) val=0 ;;
+    esac
+    for f in /sys/devices/system/cpu/cpufreq/policy*/boost; do
+        [ -w "$f" ] && echo "$val" > "$f" 2>/dev/null
+    done
+}
+
+# Başlangıçta uygula (PPD bus'a gelene kadar birkaç kez dene).
+for _ in 1 2 3 4 5; do
+    [ -n "$(current_profile)" ] && break
+    sleep 1
+done
+apply
+
+# Profil değişimlerini izle, her sinyalde yeniden uygula (idempotent).
+gdbus monitor --system --dest "$DEST" --object-path "$OBJ" 2>/dev/null |
+while read -r _line; do
+    apply
+done

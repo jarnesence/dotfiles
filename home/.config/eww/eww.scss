@@ -1,0 +1,108 @@
+@import "colors.scss";
+
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font";
+}
+
+.clockbox {
+  padding: 6px 4px;
+}
+
+/* subtle shadow for legibility (boxless, over wallpaper) */
+.time-hm {
+  font-size: 68px;
+  font-weight: 800;
+  color: $primary;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
+.time-ampm {
+  font-size: 22px;
+  font-weight: 600;
+  color: $on_surface_variant;
+  margin-left: 8px;
+  margin-bottom: 14px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.date-text {
+  font-size: 22px;
+  font-weight: 500;
+  color: $on_surface;
+  margin-right: 14px; // 90° CCW düzende baseline kaldırması sağa döndü (eski margin-bottom)
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.batbox {
+  margin-right: 14px; // 90° CCW düzende baseline kaldırması sağa döndü
+}
+
+.bat-icon {
+  font-size: 24px;
+  color: $primary;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.bat-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: $on_surface;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.cpu-icon {
+  font-size: 24px;
+  color: $primary;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.cpu-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: $on_surface;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+  margin-top: 6px; // batarya grubundan hafif ayrım (90° CCW: eski margin-right yukarı döndü)
+}
+
+/* ---------- volume / brightness OSD - matches Hyprland window borders ---------- */
+.osd-border {
+  /* same as Hyprland active_border: primary->secondary 45deg gradient, 2px, rounded */
+  background-image: linear-gradient(45deg, $primary, $secondary);
+  border-radius: 14px;
+  padding: 2px;
+}
+.osd-box {
+  background-color: rgba($kitty_bg, 0.78); /* same color + opacity as kitty (background_opacity 0.78), blurred = frosted like kitty */
+  border-radius: 12px;                     /* Hyprland rounding = 12 */
+  padding: 16px 24px;
+}
+
+.osd-icon {
+  font-size: 30px;
+  color: $primary;
+  margin-right: 4px;
+}
+
+.osd-text {
+  font-size: 21px;
+  font-weight: 700;
+  color: $on_surface;
+  min-width: 58px;
+}
+
+.osd-bar {
+  min-width: 220px;
+
+  trough {
+    background-color: rgba($on_surface_variant, 0.22);
+    border-radius: 10px;
+    min-height: 10px;
+  }
+  progress {
+    background-color: $primary;
+    border-radius: 10px;
+    min-height: 10px;
+  }
+  &.boost progress { background-color: $tertiary; }  /* volume > 100% */
+}

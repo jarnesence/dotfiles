@@ -1,0 +1,7 @@
+# Everyday desktop apps (official repos)
+nautilus
+papers
+spotify-player
+zed
+discord
+gpu-screen-recorder

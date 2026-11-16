@@ -1,0 +1,27 @@
+# OPTIONAL developer toolchains — install only if the user says yes.
+clang
+libc++
+go
+zig
+bun
+npm
+uv
+gradle
+kotlin
+jdk17-openjdk
+jdk21-openjdk
+dotnet-sdk
+emscripten
+podman
+podman-docker
+tectonic
+pandoc-cli
+perl-image-exiftool
+python-matplotlib
+python-numpy
+python-openpyxl
+python-pandas
+python-pillow
+tk
+cdrtools
+zsync

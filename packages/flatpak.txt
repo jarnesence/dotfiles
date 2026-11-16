@@ -1,0 +1,7 @@
+# Flathub apps
+com.opera.Opera
+com.tutanota.Tutanota
+io.github.celluloid_player.Celluloid
+org.gnome.Calculator
+org.gnome.Loupe
+org.localsend.localsend_app

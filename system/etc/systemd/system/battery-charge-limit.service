@@ -1,0 +1,12 @@
+[Unit]
+Description=Pil sarj ust limitini %80'e sabitler (pil omru icin)
+After=multi-user.target
+StartLimitBurst=0
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold'
+
+[Install]
+WantedBy=multi-user.target

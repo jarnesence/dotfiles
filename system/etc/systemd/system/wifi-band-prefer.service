@@ -1,0 +1,14 @@
+[Unit]
+Description=Prefer 5/6 GHz AP of the same Wi-Fi network (seamless wpa_supplicant roam)
+After=wpa_supplicant.service NetworkManager.service
+Wants=wpa_supplicant.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/wifi-band-prefer
+Restart=on-failure
+RestartSec=5
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

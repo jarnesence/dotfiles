@@ -1,0 +1,14 @@
+[Unit]
+Description=Sync CPU boost with power-profiles-daemon profile (power-saver=off)
+After=power-profiles-daemon.service
+Wants=power-profiles-daemon.service
+PartOf=power-profiles-daemon.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ppd-boost-sync
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=power-profiles-daemon.service

@@ -1,0 +1,4 @@
+# Tum PCI cihazlarini runtime power management'a al.
+# Cihaz kullanimdayken askiya alinmaz; sadece bosta guc keser.
+# Geri almak icin: bu dosyayi sil + reboot (ya da power/control'e 'on' yaz).
+ACTION=="add", SUBSYSTEM=="pci", TEST=="power/control", ATTR{power/control}="auto"

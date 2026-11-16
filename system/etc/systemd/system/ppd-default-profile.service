@@ -1,0 +1,14 @@
+[Unit]
+Description=Acilista power-profiles-daemon profilini power-saver yapar
+After=power-profiles-daemon.service
+Wants=power-profiles-daemon.service
+PartOf=power-profiles-daemon.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# PPD bus'a gelene kadar bekle, sonra profili ayarla.
+ExecStart=/bin/sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do powerprofilesctl set power-saver && exit 0; sleep 1; done; exit 1'
+
+[Install]
+WantedBy=power-profiles-daemon.service

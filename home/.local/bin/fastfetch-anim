@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+"""Cyberpunk fastfetch: typewriter reveal + neon brightness pulse."""
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+TRUECOLOR = re.compile(r'\x1b\[(?:[0-9;]*;)?38;2;(\d+);(\d+);(\d+)m')
+
+TYPE_DELAY = float(os.environ.get('FF_TYPE_DELAY', '0.012'))
+PULSE_DELAY = float(os.environ.get('FF_PULSE_DELAY', '0.05'))
+
+
+def scale_colors(line, factor):
+    def repl(m):
+        r = min(255, max(0, int(int(m.group(1)) * factor)))
+        g = min(255, max(0, int(int(m.group(2)) * factor)))
+        b = min(255, max(0, int(int(m.group(3)) * factor)))
+        return f'\x1b[38;2;{r};{g};{b}m'
+    return TRUECOLOR.sub(repl, line)
+
+
+def main():
+    fastfetch = shutil.which('fastfetch')
+    if not fastfetch:
+        sys.exit(0)
+
+    if not sys.stdout.isatty() or os.environ.get('FF_NO_ANIM'):
+        os.execv(fastfetch, [fastfetch, *sys.argv[1:]])
+
+    proc = subprocess.run([fastfetch, *sys.argv[1:]], capture_output=True, text=True)
+    raw = proc.stdout.rstrip('\n')
+    if not raw:
+        sys.stdout.write(proc.stdout)
+        sys.stderr.write(proc.stderr)
+        sys.exit(proc.returncode)
+
+    lines = raw.split('\n')
+    out = sys.stdout
+    out.write('\x1b[?25l\x1b[s')
+    out.flush()
+
+    try:
+        # Phase 1: typewriter reveal
+        for line in lines:
+            out.write(line + '\n')
+            out.flush()
+            time.sleep(TYPE_DELAY)
+
+        # Phase 2: gentle neon brightness pulse (one cycle)
+        for fac in (1.25, 1.5, 1.7, 1.5, 1.25, 1.0):
+            out.write('\x1b[u\x1b[0J')
+            for line in lines:
+                out.write(scale_colors(line, fac) + '\n')
+            out.flush()
+            time.sleep(PULSE_DELAY)
+
+        # Phase 3: settle
+        out.write('\x1b[u\x1b[0J' + raw + '\n')
+    except (KeyboardInterrupt, BrokenPipeError):
+        pass
+    finally:
+        out.write('\x1b[?25h')
+        out.flush()
+
+
+if __name__ == '__main__':
+    main()

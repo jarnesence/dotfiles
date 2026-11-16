@@ -1,0 +1,20 @@
+# Sisteme uyumlu spotify-player temasi.
+# palette TANIMLANMADI -> terminal (kitty) renkleri = matugen paleti (wallpaper ile canli guncellenir).
+# Bu palet "muted" oldugu icin renkli referanslar (Cyan/Green/BrightBlack) cok koyu kaliyor; okunabilirlik
+# icin TUM metinler en acik iki tona sabitlendi: BrightWhite (base07)=onemli, White (base05)=ikincil.
+[[themes]]
+name = "matugen"
+
+[themes.component_style]
+block_title       = { fg = "BrightWhite", modifiers = ["Bold"] }
+page_desc         = { fg = "BrightWhite", modifiers = ["Bold"] }
+table_header      = { fg = "BrightWhite", modifiers = ["Bold"] }
+playback_status   = { fg = "BrightWhite", modifiers = ["Bold"] }
+playback_track    = { fg = "BrightWhite", modifiers = ["Bold"] }
+current_playing   = { fg = "BrightWhite", modifiers = ["Bold"] }
+playback_artists  = { fg = "BrightWhite" }
+playback_album    = { fg = "White" }
+playback_genres   = { fg = "White", modifiers = ["Italic"] }
+playback_metadata = { fg = "White" }
+border            = { fg = "BrightBlack" }
+selection         = { modifiers = ["Reversed", "Bold"] }

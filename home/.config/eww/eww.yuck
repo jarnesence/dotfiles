@@ -1,0 +1,62 @@
+;; ╭────────────────────────────────────────────╮
+;; │  Masaüstü saat + batarya — sağ alt köşe       │
+;; │  Ses/parlaklık OSD — orta-alt                 │
+;; │  Renkler matugen'den (colors.scss)            │
+;; ╰────────────────────────────────────────────╯
+
+;; ---------- pollers ----------
+(defpoll HOUR  :interval "10s" :initial "00" `date +%H`)
+(defpoll MIN   :interval "10s" :initial "00" `date +%M`)
+(defpoll WDAY  :interval "300s" :initial "" `LC_TIME=tr_TR.UTF-8 date +%A`)
+(defpoll MON   :interval "300s" :initial "" `LC_TIME=tr_TR.UTF-8 date +%b`)
+(defpoll MDAY  :interval "300s" :initial "" `date +%d`)
+(defpoll BAT   :interval "5s" :initial "0" `cat /sys/class/power_supply/BAT0/capacity`)
+;; k10temp Tctl — hwmon numarası boot'ta değişebildiği için isimle bulunur
+(defpoll CPUTEMP :interval "5s" :initial "--" `awk '{printf "%d", $1/1000}' "$(grep -l '^k10temp$' /sys/class/hwmon/hwmon*/name | head -1 | xargs dirname)/temp1_input"`)
+(defpoll BATIC :interval "30s" :initial "󰁹" `bash ~/.config/eww/scripts/battery-icon.sh`)
+
+;; ---------- OSD state (osd.sh günceller) ----------
+(defvar osd_icon "󰕾")
+(defvar osd_val  50)
+(defvar osd_text "50%")
+(defvar osd_boost false)
+
+;; ---------- widgets ----------
+(defwidget clockwidget []
+  ;; 90° CCW döndürülmüş düzen: dikey kolon, metinler aşağıdan yukarı okunur (angle 90).
+  ;; Orijinal soldan-sağa sıra (saat-tarih-batt) dönünce alttan-üste olur → kolon sırası ters.
+  (box :class "clockbox" :orientation "v" :space-evenly false :spacing 16
+       :halign "end" :valign "end"
+    (box :class "batbox" :orientation "v" :space-evenly false :spacing 8 :halign "end"
+      (label :class "bat-text" :angle 90 :text "${BAT}%")
+      (label :class "bat-icon" :angle 90 :text BATIC)
+      (label :class "cpu-text" :angle 90 :text "${CPUTEMP}°")
+      (label :class "cpu-icon" :angle 90 :text "󰻠"))
+    (label :class "date-text" :angle 90 :halign "end" :text "${WDAY}, ${MON} ${MDAY}")
+    (box :class "timebox" :orientation "v" :space-evenly false :spacing 4 :halign "end"
+      (label :class "time-hm" :angle 90 :text "${HOUR}:${MIN}"))))
+
+(defwidget osd []
+  (box :class "osd-border"
+    (box :class "osd-box" :orientation "h" :space-evenly false :spacing 16 :valign "center"
+      (label :class "osd-icon" :text osd_icon)
+      (progress :class {osd_boost ? "osd-bar boost" : "osd-bar"} :value osd_val :orientation "h" :valign "center")
+      (label :class "osd-text" :text osd_text))))
+
+;; ---------- windows ----------
+(defwindow clock
+  :monitor 0
+  :geometry (geometry :x "0px" :y "28px"
+                      :width "110px" :height "760px"
+                      :anchor "bottom right")
+  :stacking "bg"
+  :exclusive false
+  (clockwidget))
+
+(defwindow osd
+  :monitor 0
+  :geometry (geometry :y "120px" :anchor "bottom center")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  (osd))
