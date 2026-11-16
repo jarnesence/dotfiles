@@ -218,6 +218,7 @@ namespace {
 
     void registerShowDesktopGesture() {
         (void)g_pTrackpadGestures->addGesture(makeUnique<CShowDesktopGesture>(), 4, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
+        (void)g_pTrackpadGestures->addGesture(makeUnique<CShowDesktopGesture>(), 5, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
     }
 
     SDispatchResult dispatchShowDesktop(std::string args) {
@@ -308,7 +309,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         restoreIfShown();
     });
 
-    return {"hypr-showdesktop", "macOS-style 1:1 4-finger pinch Show Desktop", "jarn", "2.0.3"};
+    return {"hypr-showdesktop", "macOS-style 1:1 4/5-finger pinch Show Desktop", "jarn", "2.0.4"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
@@ -319,6 +320,7 @@ APICALL EXPORT void PLUGIN_EXIT() {
     damageActiveMonitor();
 
     (void)g_pTrackpadGestures->removeGesture(4, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
+    (void)g_pTrackpadGestures->removeGesture(5, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
     g_state.renderPreListener.reset();
     g_state.renderStageListener.reset();
     g_state.configReloadListener.reset();
