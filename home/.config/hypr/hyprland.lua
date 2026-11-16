@@ -59,9 +59,9 @@ end
 -- "no"     : blur kapalı, tüm pencereler tam opak (1.0)
 -- "hybrid" : sadece kitty'nin olduğu workspace'te ve sadece kitty'ye blur; diğer uygulamalar tam opak (1.0)
 -- "full"   : tüm pencerelerde blur + terminal şeffaflığı (0.86)
-local BLUR_MODE = "hybrid"
+local BLUR_MODE = "full"
 -- "0" | "az" | "orta" | "cok"
-local BLUR_LEVEL = "0"
+local BLUR_LEVEL = "orta"
 local BLUR_LEVELS = {
     ["0"]    = { size = 0, passes = 0 },
     ["az"]   = { size = 2, passes = 1 },
@@ -112,6 +112,7 @@ hl.config({
         -- (caelestia da tam bunu kullanıyordu; donanım/PSR sorunu DEĞİLDİ.)
         mouse_move_enables_dpms = true,
         key_press_enables_dpms = true,
+        middle_click_paste = false,
     },
     -- 20sn hareketsizlikte imleci gizle → 5dk siyah screensaver'da imleç oku görünmez
     -- (0.57+ üst sınır 20; eskiden 30 idi)

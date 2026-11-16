@@ -201,9 +201,9 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 
     HyprlandAPI::addDispatcherV2(PHANDLE, "showdesktop", dispatchShowDesktop);
 
-    // Direct raw libinput pinch events (zero deadzone, 100% reliable for 4 and 5 fingers)
+    // Direct raw libinput pinch events (zero deadzone; 3/4/5 fingers so hardware slot drops on 5-finger gestures never miss)
     g_state.pinchBeginListener = Event::bus()->m_events.gesture.pinch.begin.listen([](const IPointer::SPinchBeginEvent& e, Event::SCallbackInfo& info) {
-        if (e.fingers < 4)
+        if (e.fingers < 3)
             return;
 
         info.cancelled        = true;
@@ -298,7 +298,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         restoreIfShown();
     });
 
-    return {"hypr-showdesktop", "macOS-style 1:1 4/5-finger pinch Show Desktop", "jarn", "2.0.5"};
+    return {"hypr-showdesktop", "macOS-style 1:1 3/4/5-finger pinch Show Desktop", "jarn", "2.0.6"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {

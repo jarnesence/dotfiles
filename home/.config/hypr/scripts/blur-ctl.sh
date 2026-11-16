@@ -73,7 +73,15 @@ PY
         fi
     fi
     rm -f "$backup"
-    [ "$var" = BLUR_MODE ] && write_gtk_blur "$val"
+    if [ "$var" = BLUR_MODE ]; then
+        write_gtk_blur "$val"
+        local kitty_opac="0.75"
+        [ "$val" = no ] && kitty_opac="1.0"
+        if [ -f "$HOME/.config/kitty/kitty.conf" ]; then
+            sed -i "s/^background_opacity[[:space:]]\+[0-9.]\+/background_opacity         $kitty_opac/" "$HOME/.config/kitty/kitty.conf"
+            pkill -USR1 kitty 2>/dev/null || true
+        fi
+    fi
     return 0
 }
 
