@@ -250,6 +250,12 @@ Bu parametreler bootloader'a göre farklı yere yazılır (Limine/UKI: `/etc/ker
 `mkinitcpio -P`; systemd-boot: entry dosyası; GRUB: `GRUB_CMDLINE_LINUX_DEFAULT` + `grub-mkconfig`).
 `root=` parametresine asla dokunma.
 
+### 7.1 Yerel Hyprland eklentisi (`hypr-showdesktop`)
+4 parmaklı macOS tarzı Show Desktop hareketi için eklentiyi derle (`hyprland` header'ları ve `g++` gerekir):
+```sh
+make -C ~/.config/hypr/plugins/hypr-showdesktop
+```
+
 ---
 
 ## 8. Kısayollar ve TUI'ler (kurulumdan sonra kullanıcıya özetle)
@@ -260,7 +266,8 @@ Bu parametreler bootloader'a göre farklı yere yazılır (Limine/UKI: `/etc/ker
 | `Super+A` | Chrome · `Super+E` Nautilus |
 | `Super+Space` | uygulama başlatıcı (fzf TUI) |
 | `Super+,` | **Ayarlar TUI** (Wi-Fi, Bluetooth, DND, güç profili, ağ & DNS, ses, ekran, görünüm, giriş, güç, bildirim, sistem, yazılım, güvenlik, Hyprland) |
-| `Super+B` | sistem tepsisi TUI (tray-hostd servisi) |
+| `Super+B` | blur modunu değiştir (`no` → `hybrid` → `full`, OSD gösterir) |
+| `Super+Shift+B` | blur seviyesini değiştir (`0` → `Az` → `Orta` → `Çok`, OSD gösterir) |
 | `Super+N` | Spotify (resmi uygulama, Flathub) |
 | `Super+.` / `Super+Shift+.` | sonraki/önceki duvar kağıdı (palet de yenilenir) |
 | `Super+Shift+Q` | güç menüsü TUI |
@@ -269,7 +276,7 @@ Bu parametreler bootloader'a göre farklı yere yazılır (Limine/UKI: `/etc/ker
 | `Super+Shift+C` | renk seçici |
 | `Super+U` | scratchpad |
 | `Super+1..0` (+Shift) | workspace (pencereyi taşı) |
-| 3/4 parmak yatay | workspace · `Super`+3 parmak taşı · `Super+Shift`+3 parmak boyutlandır |
+| 3/4 parmak yatay | workspace · `Super`+3 parmak taşı · `Super+Shift`+3 parmak boyutlandır · **4 parmak pinch** 1:1 Show Desktop |
 | `Super+Shift+M` | Hyprland'den çık |
 
 Tüm TUI'ler `kitty --class tui-<ad>` ile açılır; `tui-.*` kuralı onları 900×540 ortalı float yapar.

@@ -42,6 +42,8 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("eww open clock 2>/dev/null || { eww daemon & sleep 1; eww open clock; }")
     -- idle yöneticisi: 3dk karart → 5dk GERÇEK DPMS off (input ile uyanır, donma yok)
     hl.exec_cmd("hypridle")
+    -- macOS tarzı 4 parmak pinch Show Desktop eklentisi
+    hl.exec_cmd("hyprctl plugin load @HOME@/.config/hypr/plugins/hypr-showdesktop/hypr-showdesktop.so")
 end)
 
 ------------------ DİNAMİK PALET ------------
@@ -54,6 +56,21 @@ if not ok or type(palette) ~= "table" then
 end
 
 ------------------ LOOK & FEEL ---------------
+-- "no"     : blur kapalı, tüm pencereler tam opak (1.0)
+-- "hybrid" : sadece kitty'nin olduğu workspace'te ve sadece kitty'ye blur; diğer uygulamalar tam opak (1.0)
+-- "full"   : tüm pencerelerde blur + terminal şeffaflığı (0.86)
+local BLUR_MODE = "no"
+-- "0" | "az" | "orta" | "cok"
+local BLUR_LEVEL = "0"
+local BLUR_LEVELS = {
+    ["0"]    = { size = 0, passes = 0 },
+    ["az"]   = { size = 2, passes = 1 },
+    ["orta"] = { size = 4, passes = 2 },
+    ["cok"]  = { size = 7, passes = 3 },
+}
+local blur_cfg = BLUR_LEVELS[BLUR_LEVEL] or BLUR_LEVELS["az"]
+local blur_active = (BLUR_MODE == "full") and (BLUR_LEVEL ~= "0")
+
 hl.config({
     general = {
         gaps_in  = 5,
@@ -70,13 +87,17 @@ hl.config({
     decoration = {
         rounding       = 12,
         rounding_power = 2,
-        active_opacity   = 1.0,
-        inactive_opacity = 1.0, -- diğer uygulamalar tam opak (opak yüzeyde blur da hesaplanmaz)
+        active_opacity   = (BLUR_MODE == "full") and 0.86 or 1.0,
+        inactive_opacity = (BLUR_MODE == "full") and 0.86 or 1.0,
         shadow = { enabled = true, range = 18, render_power = 3, color = 0x55000000 },
-        -- enabled başlangıçta false; aşağıdaki HİBRİT BLUR bloğu aktif workspace'te kitty
-        -- varsa açar. Global açık bırakmak tarayıcıyı yavaşlatmıştı (kare başı blur ön-geçişi
-        -- + eww layer blur'u her workspace'te hesaplanıyordu).
-        blur   = { enabled = false, size = 5, passes = 2, new_optimizations = true, xray = true, ignore_opacity = true },
+        blur   = {
+            enabled           = blur_active,
+            size              = blur_cfg.size,
+            passes            = blur_cfg.passes,
+            new_optimizations = (BLUR_MODE ~= "full"),
+            xray              = (BLUR_MODE ~= "full"),
+            ignore_opacity    = true,
+        },
     },
     animations = { enabled = true },
     dwindle = { preserve_split = true },
@@ -157,7 +178,8 @@ hl.bind(mod .. " + N",      hl.dsp.exec_cmd("flatpak run com.spotify.Client"))
 hl.bind(mod .. " + comma",  hl.dsp.exec_cmd("kitty --class tui-settings -e @HOME@/.local/bin/settings"))
 hl.bind(mod .. " + Space",  hl.dsp.exec_cmd("kitty --class tui-launcher -e " .. scripts .. "/launcher.sh"))
 -- Sistem tepsisi (tray) yöneticisi: ikonları gör / menü-toggle / kapat. tray-hostd servisi toplar.
-hl.bind(mod .. " + B",      hl.dsp.exec_cmd("kitty --class tui-tray -e @HOME@/.local/bin/tray"))
+hl.bind(mod .. " + B",         hl.dsp.exec_cmd(scripts .. "/blur-ctl.sh cycle-mode"))
+hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd(scripts .. "/blur-ctl.sh cycle-level"))
 
 -- wallpaper döngüsü: Super+. sonraki, Super+Shift+. önceki (klasörde sıralı gezinir, palet de yenilenir)
 hl.bind(mod .. " + period",         hl.dsp.exec_cmd(scripts .. "/wallpaper-cycle.sh next"))
@@ -229,37 +251,47 @@ hl.window_rule({ name = "float-tui", match = { class = "tui-.*" }, float = true,
 -- eww blur'u KAPATILDI (2026-06-07, performans): OSD/saat artık buzlu cam değil, düz yarı saydam.
 -- Geri istenirse: hl.layer_rule({ name = "blur-eww", match = { namespace = "gtk-layer-shell" }, blur = true, ignore_alpha = 0.4 })
 
------------------- HİBRİT BLUR: kitty'nin olduğu workspace'te ---------------
--- Blur, aktif workspace'te en az bir kitty penceresi varsa açılır; yoksa kapalı →
+------------------ BLUR MODU ("no" | "hybrid" | "full") ---------------------
+-- "hybrid": Blur, aktif workspace'te en az bir kitty penceresi varsa açılır; yoksa kapalı →
 -- kitty olmayan workspace'lerde (ör. Chrome) blur maliyeti sıfır. Kitty dışı pencereler
 -- kitty'li workspace'te de no_blur kuralıyla blur'lanmaz (frost sadece terminalde).
--- Yeni bir uygulamaya blur istenirse: regex'e ekle (^(?!kitty|foo).*$) + BLUR_CLASS'a ekle.
 -- RE2 lookahead desteklemediği için "negative:" öneki (eski (?!...) hâli hiç eşleşmiyordu!)
-hl.window_rule({ name = "no-blur-others", match = { class = "negative:^kitty$" }, no_blur = true })
+if BLUR_MODE == "hybrid" then
+    hl.window_rule({ name = "no-blur-others", match = { class = "negative:^kitty$" }, no_blur = true })
 
-local BLUR_CLASS = "^kitty$"
-local function blur_recompute(ws, src)
-    ws = ws or hl.get_active_workspace()
-    if ws == nil then return end
-    local want = false
-    local n = 0
-    for _, w in ipairs(ws:get_windows() or {}) do
-        n = n + 1
-        if w.class and w.class:match(BLUR_CLASS) then want = true; break end
+    if BLUR_LEVEL ~= "0" then
+        local BLUR_CLASS = "^kitty$"
+        local function blur_recompute(ws, src)
+            ws = ws or hl.get_active_workspace()
+            if ws == nil then return end
+            local want = false
+            for _, w in ipairs(ws:get_windows() or {}) do
+                if w.class and w.class:match(BLUR_CLASS) then want = true; break end
+            end
+            -- idempotent set: state tutma (reload'da desenkron oluyordu)
+            hl.config({ decoration = { blur = { enabled = want } } })
+        end
+        -- Event anında pencere listesi/aktif ws henüz güncel olmayabiliyor (ör. window.close
+        -- anında pencere hâlâ listede; yeni ws'e geçişte workspace.active hiç gelmiyor, sadece
+        -- workspace.created geliyor). Bu yüzden her event 80ms sonra tek seferlik recompute planlar.
+        local function blur_schedule(src)
+            hl.timer(function() blur_recompute(nil, src) end, { timeout = 80, type = "oneshot" })
+        end
+        hl.on("workspace.active",  function() blur_schedule("wsactive") end)
+        hl.on("workspace.created", function() blur_schedule("wscreated") end)
+        hl.on("window.open",  function() blur_schedule("open") end)
+        hl.on("window.close", function() blur_schedule("close") end)
+        hl.on("window.move_to_workspace", function() blur_schedule("move") end)
+        -- başlangıç/reload anında uygula (startup'ta aktif ws nil olabilir → guard)
+        blur_recompute(nil, "load")
     end
-    -- idempotent set: state tutma (reload'da desenkron oluyordu)
-    hl.config({ decoration = { blur = { enabled = want } } })
+elseif BLUR_MODE == "full" then
+    -- kitty ve Nautilus'un kendi 0.86 şeffaflığı var; Hyprland'in 0.86'sı ile
+    -- çarpılıp 0.74'e düşmemesi için Hyprland opaklık çarpanını 1.0'da tut.
+    hl.window_rule({ name = "kitty-full-opacity",    match = { class = "^kitty$" },               opacity = "1.0 override" })
+    hl.window_rule({ name = "nautilus-full-opacity", match = { class = "^org\\.gnome\\.Nautilus$" }, opacity = "1.0 override" })
 end
--- Event anında pencere listesi/aktif ws henüz güncel olmayabiliyor (ör. window.close
--- anında pencere hâlâ listede; yeni ws'e geçişte workspace.active hiç gelmiyor, sadece
--- workspace.created geliyor). Bu yüzden her event 80ms sonra tek seferlik recompute planlar.
-local function blur_schedule(src)
-    hl.timer(function() blur_recompute(nil, src) end, { timeout = 80, type = "oneshot" })
-end
-hl.on("workspace.active",  function() blur_schedule("wsactive") end)
-hl.on("workspace.created", function() blur_schedule("wscreated") end)
-hl.on("window.open",  function() blur_schedule("open") end)
-hl.on("window.close", function() blur_schedule("close") end)
-hl.on("window.move_to_workspace", function() blur_schedule("move") end)
--- başlangıç/reload anında uygula (startup'ta aktif ws nil olabilir → guard)
-blur_recompute(nil, "load")
+
+-- DHU: preserve the BMW Z4 G29 display ratio instead of tiling/stretching.
+hl.window_rule({ name = "dhu-z4-window", match = { title = "^Android Auto - Desktop Head Unit$" }, float = true, size = "1280 480", center = true, keep_aspect_ratio = true })
+

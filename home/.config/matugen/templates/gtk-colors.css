@@ -30,3 +30,8 @@
 @define-color sidebar_bg_color {{colors.surface_container.default.hex}};
 @define-color sidebar_fg_color {{colors.on_surface.default.hex}};
 @define-color sidebar_backdrop_color {{colors.surface.default.hex}};
+
+@define-color gtk_blur_bg {{colors.surface.default.hex}};
+@define-color gtk_blur_sidebar {{colors.surface_container.default.hex}};
+
+@import 'blur-mode.css';

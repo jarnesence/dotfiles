@@ -109,10 +109,46 @@ print("\n  \033[2mSuper + 1…0 switch workspace · add Shift to move the window
 PY
 }
 
+BLUR_CTL="$SCRIPTS/blur-ctl.sh"
+
+blur_mode_get()  { "$BLUR_CTL" get-mode; }
+blur_level_get() { "$BLUR_CTL" get-level; }
+
+blur_menu() {
+    local cur sel
+    cur=$(blur_mode_get)
+    sel=$(pick "  Blur mode ($cur) ❯ " "applies & saves to hyprland.lua" \
+        "$(item no     "󰂵" "No blur"     "blur off · opaque (1.0)")" \
+        "$(item hybrid "󰂷" "Hybrid blur" "kitty only · others opaque (1.0)")" \
+        "$(item full   "󰂸" "Full blur"   "all apps · opacity 0.86")" \
+        "$(sep)" \
+        "$(r back "󰌍  Back")")
+    case "$sel" in
+        no|hybrid|full) "$BLUR_CTL" set-mode "$sel" ;;
+    esac
+}
+
+blur_level_menu() {
+    local cur sel
+    cur=$(blur_level_get)
+    sel=$(pick "  Blur level ($cur) ❯ " "applies & saves to hyprland.lua" \
+        "$(item 0    "󰂵" "0"    "no blur (size 0, passes 0)")" \
+        "$(item az   "󰂷" "Az"   "light (size 2, passes 1)")" \
+        "$(item orta "󰂷" "Orta" "medium (size 4, passes 2)")" \
+        "$(item cok  "󰂸" "Çok"  "strong (size 7, passes 3)")" \
+        "$(sep)" \
+        "$(r back "󰌍  Back")")
+    case "$sel" in
+        0|az|orta|cok) "$BLUR_CTL" set-level "$sel" ;;
+    esac
+}
+
 look_menu() {
     local sel
     while true; do
         sel=$(pick "  Look & feel ❯ " "applies live · save to keep it" \
+            "$(item blur  "󰂷" "Blur mode"        "$(blur_mode_get)")" \
+            "$(item blvl  "󰂸" "Blur level"       "$(blur_level_get)")" \
             "$(item gin   "󰃑" "Inner gaps"    "$(opt general:gaps_in)")" \
             "$(item gout  "󰃐" "Outer gaps"        "$(opt general:gaps_out)")" \
             "$(item bord  "󰃞" "Border width"      "$(opt general:border_size)")" \
@@ -125,6 +161,8 @@ look_menu() {
             "$(r back "󰌍  Back")")
         clear
         case "$sel" in
+            blur)  blur_menu ;;
+            blvl)  blur_level_menu ;;
             gin)   title "Inner gaps";  ask "gaps_in"  "$(opt general:gaps_in)"  && set_opt general:gaps_in  "$ANSWER"; pause ;;
             gout)  title "Outer gaps";  ask "gaps_out" "$(opt general:gaps_out)" && set_opt general:gaps_out "$ANSWER"; pause ;;
             bord)  title "Border width"; ask "border_size" "$(opt general:border_size)" && set_opt general:border_size "$ANSWER"; pause ;;
