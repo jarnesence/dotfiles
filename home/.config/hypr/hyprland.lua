@@ -124,6 +124,11 @@ hl.config({
             natural_scroll       = true,
             disable_while_typing = true,
             tap_to_click         = true,
+            -- FocalTech (ASUF1209) touchpad: 1.0'da kaydırma çok hızlıydı ve duran parmakta
+            -- dikey titreme sinyali (±0.2, yön değiştiren) gönderiyor; libinput hysteresis'i
+            -- yalnız yatay titremede açtığı için bastırılmıyor. 0.4 hem hızı hem titremeyi
+            -- görünmez kılıyor (2026-11-16, ölçülüp kullanıcıyla denendi).
+            scroll_factor        = 0.4,
         },
     },
 })

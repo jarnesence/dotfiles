@@ -231,10 +231,14 @@ ayar değiştirmek için `hyprctl keyword` **çalışmaz**; `hyprctl eval 'hl.co
    `~/.config/eww/scripts/battery-icon.sh`, `~/.config/hypr/scripts/power.sh`.
    Pil **yoksa** (masaüstü) `eww.yuck`'taki batarya etiketlerini (`bat-text`, `bat-icon`
    ve `BAT`/`BATIC` defpoll'ları) kaldır; saat kalsın.
-5. **Blur** — config, blur'u yalnız kitty içeren workspace'te açan hibrit bir mantık içerir.
+5. **Touchpad kaydırma hızı** — `input.touchpad.scroll_factor = 0.4`, kaynak makinenin FocalTech
+   (ASUF1209, `2808:0219`) touchpad'ine göre ölçülerek ayarlandı (1.0'da çok hızlı + dikey titreme).
+   Hedefte farklı touchpad varsa 1.0'dan başla, kullanıcıya denet; titreme/hız şikayeti olursa
+   `libinput debug-events` ile ölç ve düşür.
+6. **Blur** — config, blur'u yalnız kitty içeren workspace'te açan hibrit bir mantık içerir.
    Global blur'u **açma** (kaynak makinedeki iGPU kaldıramıyordu). Güçlü harici GPU'da
    bile kullanıcı istemedikçe değiştirme.
-6. **DPMS** — `misc.mouse_move_enables_dpms` ve `key_press_enables_dpms = true` kalmalı;
+7. **DPMS** — `misc.mouse_move_enables_dpms` ve `key_press_enables_dpms = true` kalmalı;
    ekran kapatma donmasının çözümü budur. "Siyah shader" gibi hack'ler ekleme.
 
 ### Kernel komut satırı (yalnız öneri — **[SOR]**, uygulamadan önce onay al)
