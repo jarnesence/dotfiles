@@ -42,8 +42,9 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("eww open clock 2>/dev/null || { eww daemon & sleep 1; eww open clock; }")
     -- idle yöneticisi: 3dk karart → 5dk GERÇEK DPMS off (input ile uyanır, donma yok)
     hl.exec_cmd("hypridle")
-    -- macOS tarzı 4 parmak pinch Show Desktop eklentisi
+    -- macOS tarzı 4/5 parmak Show Desktop + Launchpad eklentisi & daemon'ı
     hl.exec_cmd("hyprctl plugin load @HOME@/.config/hypr/plugins/hypr-showdesktop/hypr-showdesktop.so")
+    hl.exec_cmd(scripts .. "/launchpad.py")
 end)
 
 ------------------ DİNAMİK PALET ------------
