@@ -31,7 +31,8 @@ namespace {
         std::chrono::steady_clock::time_point lastTick = std::chrono::steady_clock::now();
 
         CFunctionHook*                    renderWindowHook = nullptr;
-        CHyprSignalListener               tickListener;
+        CHyprSignalListener               renderPreListener;
+        CHyprSignalListener               renderStageListener;
         CHyprSignalListener               configReloadListener;
         CHyprSignalListener               windowOpenListener;
         CHyprSignalListener               workspaceChangeListener;
@@ -263,15 +264,19 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     registerShowDesktopGesture();
     HyprlandAPI::addDispatcherV2(PHANDLE, "showdesktop", dispatchShowDesktop);
 
-    g_state.tickListener = Event::bus()->m_events.tick.listen([]() {
+    g_state.renderPreListener = Event::bus()->m_events.render.pre.listen([](PHLMONITOR pMonitor) {
         if (!g_state.animating)
+            return;
+
+        const auto targetMon = g_state.activeMonitor.lock();
+        if (targetMon && pMonitor != targetMon)
             return;
 
         const auto  now = std::chrono::steady_clock::now();
         const float dt  = std::clamp(std::chrono::duration<float>(now - g_state.lastTick).count(), 0.0005F, 0.05F);
         g_state.lastTick = now;
 
-        // Exponential spring-out curve (snappy, macOS-like deceleration)
+        // Exponential spring-out curve (snappy, macOS-like deceleration at monitor refresh rate)
         constexpr float SPEED = 16.0F;
         const float     alpha = 1.0F - std::exp(-SPEED * dt);
         g_state.currentProgress += (g_state.targetProgress - g_state.currentProgress) * alpha;
@@ -280,8 +285,15 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
             g_state.currentProgress = g_state.targetProgress;
             g_state.animating       = false;
         }
+    });
 
-        damageActiveMonitor();
+    g_state.renderStageListener = Event::bus()->m_events.render.stage.listen([](const Event::SRenderStageEvent& e) {
+        if (!g_state.animating || e.stage != RENDER_POST || !e.monitor)
+            return;
+
+        const auto targetMon = g_state.activeMonitor.lock();
+        if (!targetMon || e.monitor == targetMon)
+            g_pHyprRenderer->damageMonitor(e.monitor);
     });
 
     g_state.configReloadListener = Event::bus()->m_events.config.reloaded.listen([]() {
@@ -296,7 +308,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         restoreIfShown();
     });
 
-    return {"hypr-showdesktop", "macOS-style 1:1 4-finger pinch Show Desktop", "jarn", "2.0.2"};
+    return {"hypr-showdesktop", "macOS-style 1:1 4-finger pinch Show Desktop", "jarn", "2.0.3"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
@@ -307,7 +319,8 @@ APICALL EXPORT void PLUGIN_EXIT() {
     damageActiveMonitor();
 
     (void)g_pTrackpadGestures->removeGesture(4, TRACKPAD_GESTURE_DIR_PINCH, Input::HL_MODIFIER_NONE, 1.0F, false);
-    g_state.tickListener.reset();
+    g_state.renderPreListener.reset();
+    g_state.renderStageListener.reset();
     g_state.configReloadListener.reset();
     g_state.windowOpenListener.reset();
     g_state.workspaceChangeListener.reset();
