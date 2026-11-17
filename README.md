@@ -6,44 +6,42 @@
   <img src="https://img.shields.io/badge/Setup-Claude%20Code%20%7C%20AGY-231f28?style=flat-square&logoColor=f3b8c8" alt="Claude Code or AGY">
 </p>
 
-Arch Linux + Hyprland (**Lua config**, `hl.*` API) üzerinde, her etkileşimli yüzeyi
-bir `fzf` TUI olan sade bir masaüstü. Renkler aktif duvar kağıdından `matugen` ile üretilir
-(Hyprland kenarları, `kitty`, `eww`, GTK3/4, `mako` aynı paleti kullanır).
+A minimal desktop on **Arch Linux + Hyprland** (Lua config via `hl.*` API) where every interactive surface is an `fzf` TUI. Colors are dynamically generated from the active wallpaper using `matugen` (Hyprland borders, `kitty`, `eww`, GTK3/4, and `mako` all share the exact same palette).
 
 ![wallpaper](wallpaper/z4-4.png)
 
-## Kurulum — Kendin Uğraşma, Agent'a Kurdur
+## Installation — Don't Install It Yourself, Let an Agent Build It
 
-Burada her makinede patlayan tek-tık kurulum betikleri yok.
-Önce **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** ya da **[Antigravity (`agy`)](https://antigravity.google)** kur, bu repoyu önüne bırak — hedef makinenin donanımını (GPU, CPU, pil, Wi-Fi, ekran çözünürlüğü, ses kartı) kendisi tespit edip bütün sistemi senin yerine eksiksiz ayağa kaldırsın:
+There are no brittle one-click install scripts here that break on different hardware.
+Install **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** or **[Antigravity (`agy`)](https://antigravity.google)** first, point it at this repository, and let it detect your machine's hardware (GPU, CPU, battery, Wi-Fi, display resolution, audio) and configure the entire system for you:
 
 ```sh
 git clone https://github.com/jarnesence/dotfiles ~/dotfiles
 cd ~/dotfiles
 
-# Claude Code ile:
-claude "INSTALL.md'yi oku ve bu makineye eksiksiz uygula"
+# With Claude Code:
+claude "Read INSTALL.md and set up this machine completely"
 
-# veya Antigravity CLI (agy) ile:
-agy "INSTALL.md'yi oku ve bu makineye eksiksiz uygula"
+# Or with Antigravity CLI (agy):
+agy "Read INSTALL.md and set up this machine completely"
 ```
 
-Ayrıntılı adımlar, koşullu sistem ayarları ve dahil edilmeyenler: [INSTALL.md](INSTALL.md).
+Detailed steps, conditional system settings, and exclusions: [INSTALL.md](INSTALL.md).
 
-## İçerik
+## Structure
 
 ```
-home/        $HOME aynası (@HOME@/@USER@ tokenlı) — hypr, kitty, eww, matugen, zsh, TUI'ler…
-system/      / aynası — DNS zinciri (resolved → dnscrypt), güç/pil servisleri, sysctl, zram…
-packages/    base · apps · aur · flatpak · dev (opsiyonel)
-wallpaper/   aktif duvar kağıdı
-INSTALL.md   AI agent için kurulum talimatı
+home/        $HOME mirror (tokenized with @HOME@/@USER@) — hypr, kitty, eww, matugen, zsh, TUIs…
+system/      / mirror — DNS chain (resolved → dnscrypt), power/battery services, sysctl, zram…
+packages/    base · apps · aur · flatpak · dev (optional)
+wallpaper/   active wallpaper
+INSTALL.md   AI agent installation specification
 ```
 
-## Kısayollar (özet)
+## Keybinds (Summary)
 
-`Super+T` terminal · `Super+Space` başlatıcı · `Super+,` ayarlar · `Super+B` tepsi ·
-`Super+N` Spotify · `Super+.` duvar kağıdı · `Super+Shift+Q` güç menüsü · `Super+S` ekran görüntüsü.
-Tam liste INSTALL.md §8'de.
+`Super+T` terminal · `Super+Space` launcher · `Super+,` settings · `Super+B` tray ·
+`Super+N` Spotify · `Super+.` wallpaper · `Super+Shift+Q` power menu · `Super+S` screenshot.
+Full list in `INSTALL.md` §8.
 
 MIT.
