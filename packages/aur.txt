@@ -5,3 +5,6 @@ eww
 google-chrome
 ttf-google-sans
 claude-desktop-bin
+owly
+sac-core
+sac-gui

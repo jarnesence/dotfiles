@@ -34,6 +34,9 @@ hl.on("hyprland.start", function()
     -- yetki istemleri (polkit agent) + bildirim daemon'ı (mako)
     hl.exec_cmd("/usr/lib/hyprpolkitagent/hyprpolkitagent")
     hl.exec_cmd("mako")
+    -- pano geçmişi (cliphist): metin ve görsel kopyalamalarını saklar
+    hl.exec_cmd("wl-paste --type text --watch cliphist store")
+    hl.exec_cmd("wl-paste --type image --watch cliphist store")
     -- wallpaper (awww) + dinamik palet (matugen); daemon yukarıda ısıtıldı,
     -- script yine de yoksa başlatır (idempotent: ikinci daemon ayağa kalkmaz).
     -- --restore: ~/.cache'teki son aktif wallpaper'ı geri yükler (kapanıştaki versiyon).
@@ -60,9 +63,9 @@ end
 -- "no"     : blur kapalı, tüm pencereler tam opak (1.0)
 -- "hybrid" : sadece kitty'nin olduğu workspace'te ve sadece kitty'ye blur; diğer uygulamalar tam opak (1.0)
 -- "full"   : tüm pencerelerde blur + terminal şeffaflığı (0.86)
-local BLUR_MODE = "full"
+local BLUR_MODE = "hybrid"
 -- "0" | "az" | "orta" | "cok"
-local BLUR_LEVEL = "orta"
+local BLUR_LEVEL = "0"
 local BLUR_LEVELS = {
     ["0"]    = { size = 0, passes = 0 },
     ["az"]   = { size = 2, passes = 1 },
@@ -179,6 +182,7 @@ hl.bind(mod .. " + N",      hl.dsp.exec_cmd("flatpak run com.spotify.Client"))
 -- TUI'ler: "tui-" class öneki → tek pencere kuralı hepsini float + 900x540 + ortalı yapar (bkz. WINDOW RULES)
 hl.bind(mod .. " + comma",  hl.dsp.exec_cmd("kitty --class tui-settings -e @HOME@/.local/bin/settings"))
 hl.bind(mod .. " + Space",  hl.dsp.exec_cmd("kitty --class tui-launcher -e " .. scripts .. "/launcher.sh"))
+hl.bind(mod .. " + V",      hl.dsp.exec_cmd("kitty --class tui-clipboard -e " .. scripts .. "/clipboard.sh"))
 -- Sistem tepsisi (tray) yöneticisi: ikonları gör / menü-toggle / kapat. tray-hostd servisi toplar.
 hl.bind(mod .. " + B",         hl.dsp.exec_cmd(scripts .. "/blur-ctl.sh cycle-mode"))
 hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd(scripts .. "/blur-ctl.sh cycle-level"))

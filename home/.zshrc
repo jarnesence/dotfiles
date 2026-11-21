@@ -71,4 +71,13 @@ claude() {
   _fetch
   return $rc
 }
+
+agy() {
+  clear
+  command agy "$@"
+  local rc=$?
+  clear
+  _fetch
+  return $rc
+}
 export PATH="$HOME/.local/bin:$PATH"

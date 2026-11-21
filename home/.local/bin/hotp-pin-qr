@@ -1,0 +1,379 @@
+#!/usr/bin/env python3
+import base64
+import hashlib
+import hmac
+import io
+import os
+import struct
+import subprocess
+import sys
+import time
+from pathlib import Path
+from urllib.parse import quote
+
+import qrcode
+from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QGuiApplication, QPixmap
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QFormLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+
+C_FINDER = Path.home() / ".local" / "lib" / "hotp-finder"
+
+
+class HotpWorker(QThread):
+    found = Signal(str, int, float)
+    failed = Signal(str)
+
+    def __init__(self, target_str: str):
+        super().__init__()
+        self.target_str = target_str
+        self._cancel = False
+        self._proc = None
+
+    def cancel(self):
+        self._cancel = True
+        if self._proc and self._proc.poll() is None:
+            try:
+                self._proc.terminate()
+            except Exception:
+                pass
+
+    def run(self):
+        t0 = time.perf_counter()
+        digits = len(self.target_str)
+        target = int(self.target_str)
+
+        if C_FINDER.is_file() and os.access(C_FINDER, os.X_OK):
+            try:
+                self._proc = subprocess.Popen(
+                    [str(C_FINDER), str(target), str(digits)],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                out, err = self._proc.communicate()
+                if self._cancel:
+                    self.failed.emit("İptal edildi.")
+                    return
+                if self._proc.returncode == 0 and out.strip():
+                    parts = out.strip().split()
+                    secret = parts[0]
+                    tries = int(parts[1]) if len(parts) > 1 else 0
+                    self.found.emit(secret, tries, time.perf_counter() - t0)
+                    return
+                self.failed.emit(f"Hata: {err.strip() or 'Bulunamadı'}")
+                return
+            except Exception:
+                pass
+
+        # Fallback pure-Python search
+        mod = 10**digits
+        msg = struct.pack(">Q", 0)
+        seed = int.from_bytes(os.urandom(10), "big")
+        mask = (1 << 80) - 1
+        tries = 0
+        sha1 = hashlib.sha1
+        unpack_from = struct.unpack_from
+
+        while not self._cancel:
+            tries += 1
+            seed = (seed + 1) & mask
+            key = seed.to_bytes(10, "big")
+            d = hmac.new(key, msg, sha1).digest()
+            o = d[-1] & 0x0F
+            code = (unpack_from(">I", d, o)[0] & 0x7FFFFFFF) % mod
+            if code == target:
+                secret = base64.b32encode(key).decode("ascii")
+                self.found.emit(secret, tries, time.perf_counter() - t0)
+                return
+
+        self.failed.emit("İptal edildi.")
+
+
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("QR Auth")
+        self.setMinimumWidth(440)
+        self.worker = None
+        self.current_qr_bytes = None
+        self.current_secret = ""
+        self.current_uri = ""
+
+        self._build_ui()
+        self._apply_style()
+
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(18, 18, 18, 18)
+
+        title = QLabel("QR Auth")
+        title.setObjectName("title")
+        subtitle = QLabel("Authenticator uygulamalarında değişmeyen sabit kod oluşturur (counter=0)")
+        subtitle.setObjectName("subtitle")
+        subtitle.setWordWrap(True)
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
+
+        form = QFormLayout()
+        form.setSpacing(8)
+
+        self.issuer_input = QLineEdit()
+        self.issuer_input.setPlaceholderText("İsim (Örn: Kart, Kasa, Hesap)")
+        form.addRow("İsim (Issuer):", self.issuer_input)
+
+        self.account_input = QLineEdit()
+        self.account_input.setPlaceholderText("İsteğe bağlı alt etiket")
+        form.addRow("Etiket:", self.account_input)
+
+        pin_row = QHBoxLayout()
+        self.pin_input = QLineEdit()
+        self.pin_input.setPlaceholderText("4–8 haneli rakam (örn: 1234 veya 12345678)")
+        self.pin_input.setMaxLength(8)
+        self.pin_input.returnPressed.connect(self.start_generation)
+        self.toggle_btn = QPushButton("Gizle")
+        self.toggle_btn.setCheckable(True)
+        self.toggle_btn.setFixedWidth(64)
+        self.toggle_btn.toggled.connect(self._toggle_pin_visibility)
+        pin_row.addWidget(self.pin_input)
+        pin_row.addWidget(self.toggle_btn)
+        form.addRow("Sabit Kod:", pin_row)
+
+        layout.addLayout(form)
+
+        btn_row = QHBoxLayout()
+        self.gen_btn = QPushButton("QR Oluştur")
+        self.gen_btn.setObjectName("primary")
+        self.gen_btn.clicked.connect(self.start_generation)
+
+        self.cancel_btn = QPushButton("İptal")
+        self.cancel_btn.setEnabled(False)
+        self.cancel_btn.clicked.connect(self.cancel_generation)
+
+        btn_row.addWidget(self.gen_btn, 3)
+        btn_row.addWidget(self.cancel_btn, 1)
+        layout.addLayout(btn_row)
+
+        self.status_label = QLabel("Hazır. 4–8 haneli herhangi bir sayısal kod girebilirsiniz.")
+        self.status_label.setObjectName("status")
+        layout.addWidget(self.status_label)
+
+        self.qr_label = QLabel("QR kod burada görünecek")
+        self.qr_label.setObjectName("qrBox")
+        self.qr_label.setAlignment(Qt.AlignCenter)
+        self.qr_label.setFixedHeight(270)
+        layout.addWidget(self.qr_label)
+
+        secret_row = QHBoxLayout()
+        self.secret_out = QLineEdit()
+        self.secret_out.setReadOnly(True)
+        self.secret_out.setPlaceholderText("Secret (Base32)")
+        self.copy_secret_btn = QPushButton("Secret Kopyala")
+        self.copy_secret_btn.setEnabled(False)
+        self.copy_secret_btn.clicked.connect(lambda: self._copy_text(self.current_secret, "Secret kopyalandı."))
+        secret_row.addWidget(self.secret_out)
+        secret_row.addWidget(self.copy_secret_btn)
+        layout.addLayout(secret_row)
+
+        actions_row = QHBoxLayout()
+        self.copy_uri_btn = QPushButton("URI Kopyala")
+        self.copy_uri_btn.setEnabled(False)
+        self.copy_uri_btn.clicked.connect(lambda: self._copy_text(self.current_uri, "otpauth URI kopyalandı."))
+
+        self.save_btn = QPushButton("QR Kaydet (PNG)")
+        self.save_btn.setEnabled(False)
+        self.save_btn.clicked.connect(self.save_qr)
+
+        actions_row.addWidget(self.copy_uri_btn)
+        actions_row.addWidget(self.save_btn)
+        layout.addLayout(actions_row)
+
+    def _apply_style(self):
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #16181d;
+                color: #e6e8ee;
+                font-size: 13px;
+            }
+            #title {
+                font-size: 18px;
+                font-weight: 700;
+                color: #ffffff;
+            }
+            #subtitle {
+                color: #9aa3b2;
+                font-size: 12px;
+                margin-bottom: 4px;
+            }
+            #status {
+                color: #8ab4f8;
+                font-size: 12px;
+            }
+            #qrBox {
+                background-color: #1f232b;
+                border: 1px dashed #3a404d;
+                border-radius: 10px;
+                color: #7d8696;
+            }
+            QLineEdit {
+                background-color: #222630;
+                border: 1px solid #353b48;
+                border-radius: 6px;
+                padding: 7px 10px;
+                color: #f3f5f9;
+            }
+            QLineEdit:focus {
+                border-color: #5b8def;
+            }
+            QPushButton {
+                background-color: #282d38;
+                border: 1px solid #3a4150;
+                border-radius: 6px;
+                padding: 7px 12px;
+                color: #e6e8ee;
+            }
+            QPushButton:hover {
+                background-color: #323846;
+            }
+            QPushButton:disabled {
+                color: #666e7d;
+                background-color: #1e222a;
+            }
+            QPushButton#primary {
+                background-color: #3b76f6;
+                border-color: #3b76f6;
+                color: #ffffff;
+                font-weight: 600;
+            }
+            QPushButton#primary:hover {
+                background-color: #4c83fa;
+            }
+            QPushButton#primary:disabled {
+                background-color: #29447a;
+                border-color: #29447a;
+                color: #9cb2dc;
+            }
+        """)
+
+    def _toggle_pin_visibility(self, checked: bool):
+        self.pin_input.setEchoMode(QLineEdit.Password if checked else QLineEdit.Normal)
+        self.toggle_btn.setText("Göster" if checked else "Gizle")
+
+    def start_generation(self):
+        pin = self.pin_input.text().strip()
+        issuer = self.issuer_input.text().strip() or "SabitKod"
+
+        if not pin.isdigit() or not (4 <= len(pin) <= 8):
+            QMessageBox.warning(
+                self,
+                "Geçersiz Kod",
+                "Lütfen 4 ile 8 hane arasında sadece rakamlardan oluşan bir kod girin.",
+            )
+            return
+
+        if self.worker and self.worker.isRunning():
+            return
+
+        self.gen_btn.setEnabled(False)
+        self.cancel_btn.setEnabled(True)
+        self.copy_secret_btn.setEnabled(False)
+        self.copy_uri_btn.setEnabled(False)
+        self.save_btn.setEnabled(False)
+        self.status_label.setText(f"'{issuer}' için {len(pin)} haneli HOTP anahtarı üretiliyor...")
+
+        self.worker = HotpWorker(pin)
+        self.worker.found.connect(self._on_found)
+        self.worker.failed.connect(self._on_failed)
+        self.worker.start()
+
+    def cancel_generation(self):
+        if self.worker and self.worker.isRunning():
+            self.worker.cancel()
+
+    def _on_found(self, secret: str, tries: int, elapsed: float):
+        issuer = self.issuer_input.text().strip() or "SabitKod"
+        account = self.account_input.text().strip()
+        digits = len(self.pin_input.text().strip())
+
+        label = f"{quote(issuer)}:{quote(account)}" if account else quote(issuer)
+        uri = (
+            f"otpauth://hotp/{label}"
+            f"?secret={secret}&issuer={quote(issuer)}"
+            f"&algorithm=SHA1&digits={digits}&counter=0"
+        )
+
+        qr = qrcode.QRCode(
+            version=None,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            box_size=8,
+            border=3,
+        )
+        qr.add_data(uri)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        self.current_qr_bytes = buf.getvalue()
+        self.current_secret = secret
+        self.current_uri = uri
+
+        pixmap = QPixmap()
+        pixmap.loadFromData(self.current_qr_bytes, "PNG")
+        self.qr_label.setPixmap(
+            pixmap.scaled(250, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        )
+
+        self.secret_out.setText(secret)
+        self.status_label.setText(
+            f"Hazır! ({elapsed:.2f} sn, {tries:,} deneme) — QR kodu okutabilirsiniz."
+        )
+        self.gen_btn.setEnabled(True)
+        self.cancel_btn.setEnabled(False)
+        self.copy_secret_btn.setEnabled(True)
+        self.copy_uri_btn.setEnabled(True)
+        self.save_btn.setEnabled(True)
+
+    def _on_failed(self, msg: str):
+        self.status_label.setText(msg)
+        self.gen_btn.setEnabled(True)
+        self.cancel_btn.setEnabled(False)
+
+    def _copy_text(self, text: str, msg: str):
+        QGuiApplication.clipboard().setText(text)
+        self.status_label.setText(msg)
+
+    def save_qr(self):
+        if not self.current_qr_bytes:
+            return
+        issuer = self.issuer_input.text().strip() or "hotp"
+        safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in issuer)
+        path, _ = QFileDialog.getSaveFileName(
+            self, "QR Kodu Kaydet", f"{safe_name}_qr.png", "PNG (*.png)"
+        )
+        if path:
+            with open(path, "wb") as f:
+                f.write(self.current_qr_bytes)
+            self.status_label.setText(f"Kaydedildi: {path}")
+
+
+def main():
+    app = QApplication(sys.argv)
+    win = MainWindow()
+    win.show()
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

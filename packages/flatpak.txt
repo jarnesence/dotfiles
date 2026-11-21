@@ -1,7 +1,6 @@
 # Flathub apps
 com.opera.Opera
-com.spotify.Client
 io.github.celluloid_player.Celluloid
 org.gnome.Calculator
 org.gnome.Loupe
-org.localsend.localsend_app
+org.mozilla.firefox

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=SafeNet Authentication Client Tools
+GenericName=SAC Tools
+Exec=/usr/bin/SACTools
+Icon=SACTools
+Type=Application
+DocPath=SACTools/index.html
+Terminal=false
+Categories=Utility
+
+NoDisplay=true

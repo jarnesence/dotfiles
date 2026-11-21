@@ -49,7 +49,6 @@ zenity
 xorg-xrandr
 python-dbus
 gnome-keyring
-gcr-4
 adw-gtk-theme
 papirus-icon-theme
 noto-fonts
@@ -77,3 +76,4 @@ libavif
 hunspell
 hunspell-en_us
 flatpak
+cliphist

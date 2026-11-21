@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=SafeNet Authentication Client
+GenericName=SACMonitor
+Exec=/usr/bin/SACMonitor
+Icon=SACMonitor
+Type=Application
+DocPath=SACMonitor/index.html
+Terminal=false
+Categories=Utility
+
+NoDisplay=true
