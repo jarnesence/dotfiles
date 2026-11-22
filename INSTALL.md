@@ -285,6 +285,7 @@ make -C ~/.config/hypr/plugins/hypr-showdesktop
 | `Super+S` / `Super+Shift+S` / `Print` | ekran görüntüsü (tam / alan) → swappy |
 | `Super+Shift+C` | renk seçici |
 | `Super+U` | scratchpad |
+| `Super+"` (1'in solu) | zen düzen: kenarlık/boşluk/yuvarlama/gölge aç-kapa |
 | `Super+1..0` (+Shift) | workspace (pencereyi taşı) |
 | 3/4 parmak yatay | workspace · `Super`+3 parmak taşı · `Super+Shift`+3 parmak boyutlandır · **4 parmak pinch** 1:1 Show Desktop |
 | `Super+Shift+M` | Hyprland'den çık |

@@ -244,6 +244,33 @@ hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | swappy 
 hl.bind("Print",         hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | swappy -f -"))
 hl.bind("SHIFT + Print", hl.dsp.exec_cmd("grim - | swappy -f -"))
 
+-- ZEN DÜZEN: Super+" (TR-Q'da 1'in solundaki tuş) → kenarlık/boşluk/yuvarlama/gölge yok.
+-- Tekrar basınca, açılmadan önceki değerler (ayarlar TUI'sinden değişmiş olsa bile) geri gelir.
+-- Reload config'i yeniden uyguladığı için durum her yüklemede sıfırlanır (normal görünüm).
+ZEN_SAVED = nil
+hl.bind(mod .. " + quotedbl", function()
+    if ZEN_SAVED == nil then
+        ZEN_SAVED = {
+            gaps_in     = hl.get_config("general.gaps_in"),
+            gaps_out    = hl.get_config("general.gaps_out"),
+            border_size = hl.get_config("general.border_size"),
+            rounding    = hl.get_config("decoration.rounding"),
+            shadow      = hl.get_config("decoration.shadow.enabled"),
+        }
+        hl.config({
+            general    = { gaps_in = 0, gaps_out = 0, border_size = 0 },
+            decoration = { rounding = 0, shadow = { enabled = false } },
+        })
+    else
+        local s = ZEN_SAVED
+        ZEN_SAVED = nil
+        hl.config({
+            general    = { gaps_in = s.gaps_in, gaps_out = s.gaps_out, border_size = s.border_size },
+            decoration = { rounding = s.rounding, shadow = { enabled = s.shadow } },
+        })
+    end
+end)
+
 ------------------ MEDIA / BRIGHTNESS KEYS ---
 -- osd.sh hem seviyeyi değiştirir hem orta-alt eww OSD'sini gösterir (temalı, sade)
 hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd(scripts .. "/osd.sh vol-up"),      { locked = true, repeating = true })
