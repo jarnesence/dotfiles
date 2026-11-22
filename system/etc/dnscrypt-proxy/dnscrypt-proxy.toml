@@ -27,7 +27,7 @@
 ##
 ## Remove the leading # first to enable this; lines starting with # are ignored.
 
-server_names = ['mullvad-base-doh', 'quad9-doh-ip4-port443-nofilter-pri', 'cloudflare']
+server_names = ['adguard-dns-doh', 'quad9-doh-ip4-port443-nofilter-pri', 'cloudflare']
 
 
 ## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.

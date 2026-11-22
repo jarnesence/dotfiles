@@ -25,7 +25,6 @@ gst-plugin-pipewire
 libpulse
 power-profiles-daemon
 ananicy-cpp
-zram-generator
 dnscrypt-proxy
 brightnessctl
 hyprland

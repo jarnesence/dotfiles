@@ -153,7 +153,6 @@ Açılışta `wallpaper.sh --restore` bu duvar kağıdını geri yükler; `Super
 
 | Dosya | Koşul / uyarlama |
 |---|---|
-| `etc/systemd/zram-generator.conf` | her zaman |
 | `etc/sysctl.d/99-net.conf` (bbr + cake) | her zaman |
 | `etc/systemd/system.conf.d/no-watchdog.conf` | her zaman |
 | `etc/systemd/resolved.conf.d/00-local.conf` | her zaman (DNS zinciri, §6) |
@@ -177,6 +176,17 @@ Açılışta `wallpaper.sh --restore` bu duvar kağıdını geri yükler; `Super
 
 Sonra: `sudo systemctl daemon-reload && sudo sysctl --system && sudo udevadm control --reload`.
 
+### 5.1 Swap: btrfs swapfile (zram yok)
+Kaynakta zram kapalı; yerine ayrı `@swap` alt biriminde 16 GB swapfile var (`/swap/swapfile`).
+fstab'a dokunduğu için **[SOR]** "RAM kadar swapfile kurayım mı?" — evetse:
+```sh
+# kök btrfs ise: üst düzey @swap alt birimi → /swap (fstab: subvol=/@swap), değilse düz /swap klasörü
+sudo btrfs filesystem mkswapfile --size 16G /swap/swapfile   # ext4 vb.: fallocate + chmod 600 + mkswap
+sudo swapon /swap/swapfile
+echo '/swap/swapfile none swap defaults 0 0' | sudo tee -a /etc/fstab
+```
+Boyutu RAM'e göre seç. Snapper kullanılıyorsa `@swap` anlık görüntüye girmemeli.
+
 ---
 
 ## 6. Servisler ve DNS zinciri
@@ -190,11 +200,11 @@ sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 ```
 
 DNS zinciri: uygulama → `/etc/resolv.conf` (**symlink**) → systemd-resolved →
-`DNS=127.0.0.1` (+ düz 1.1.1.1 / 9.9.9.9 yedek), `Domains=~.` → dnscrypt-proxy (Mullvad DoH + Quad9 + Cloudflare).
+`DNS=127.0.0.1` (+ düz 1.1.1.1 / 9.9.9.9 yedek), `Domains=~.` → dnscrypt-proxy (AdGuard DoH + Quad9 + Cloudflare).
 - `Domains=~.` şart: yoksa Wi-Fi'nin modem DNS'i de varsayılan rota olur, sorgular operatöre sızar ve DNS engelleri geri gelir.
 - `resolv.conf` **düz dosya olmayacak**, symlink kalacak.
 - resolved katmanında **DoT/DNSSEC açma** (dnscrypt zaten şifreli; açmak zinciri kırar).
-- NM bağlantı-başı DNS'e yazma. Mullvad düz UDP/53'e cevap vermez.
+- NM bağlantı-başı DNS'e yazma.
 - Doğrula: `resolvectl query archlinux.org` ve `journalctl -u dnscrypt-proxy -n 20`.
   DNS kırılırsa internetsiz kalınır: dnscrypt çalışmıyorsa `resolved.conf.d/00-local.conf`'u
   geçici olarak kaldırıp kullanıcıya bildir.
@@ -244,7 +254,7 @@ ayar değiştirmek için `hyprctl keyword` **çalışmaz**; `hyprctl eval 'hl.co
 ### Kernel komut satırı (yalnız öneri — **[SOR]**, uygulamadan önce onay al)
 Kaynakta: `quiet splash loglevel=0 systemd.show_status=false rd.systemd.show_status=false
 rd.udev.log_level=3 vt.global_cursor_default=0 zswap.enabled=0 nmi_watchdog=0`
-(zswap kapalı çünkü zram var). Yalnız **AMD iGPU + eDP panel** ve DPMS/ekran uyanma donması
+(zram yok, swap btrfs swapfile — §5.1; zswap kapalı). Yalnız **AMD iGPU + eDP panel** ve DPMS/ekran uyanma donması
 görülürse: `amdgpu.dcdebugmask=0xc10` (PSR/Replay kapatır). GPU=nvidia ise `nvidia_drm.modeset=1`.
 Bu parametreler bootloader'a göre farklı yere yazılır (Limine/UKI: `/etc/kernel/cmdline` +
 `mkinitcpio -P`; systemd-boot: entry dosyası; GRUB: `GRUB_CMDLINE_LINUX_DEFAULT` + `grub-mkconfig`).
