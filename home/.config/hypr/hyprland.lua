@@ -313,6 +313,103 @@ hl.window_rule({
 -- Geri istenirse: hl.layer_rule({ name = "blur-eww", match = { namespace = "gtk-layer-shell" }, blur = true, ignore_alpha = 0.4 })
 hl.layer_rule({ name = "blur-launchpad", match = { namespace = "hypr-launchpad" }, blur = true, ignore_alpha = 0.0 })
 
+------------------ ALÇAK-GENİŞ BÖLÜNME DÜZELTİCİ ----------------
+-- preserve_split=true yüzünden pencere kapanınca/taşınınca kalanlar eski bölünmeyi koruyup
+-- alçak-geniş dizilebiliyordu (2 pencere üst-alt, ya da 3'te üstte tam-genişlik bir pencere).
+-- Kapanma / başka ws'e taşıma / float'a alma sonrası aktif ws'teki döşeli pencereler kutu
+-- şekline göre düzeltilir: geniş kutu → yan yana, uzun kutu → üst üste (dwindle'ın açılıştaki
+-- kuralı). Her turda tek togglesplit, sonra yeniden ölçülür; bitince odak geri verilir.
+-- Super+J ile elle yaptığın bölünmeye bu olaylar gelene kadar dokunulmaz.
+do
+    local T = 3      -- hizalama toleransı (px)
+    local ADJ = 40   -- iki pencere arası boşluk (gaps) toleransı
+    local busy = false
+
+    local function tiled_on(ws)
+        local t = {}
+        for _, w in ipairs(hl.get_workspace_windows(ws.id) or {}) do
+            if w.mapped and not w.hidden and not w.floating then table.insert(t, w) end
+        end
+        return t
+    end
+    local function near(a, b) return math.abs(a - b) < T end
+
+    -- düzeltilecek ilk pencereyi bul (o pencerede togglesplit = ebeveyn bölünmesini çevir)
+    local function find_wrong(t)
+        local ux1, uy1, ux2, uy2 = math.huge, math.huge, -math.huge, -math.huge
+        for _, w in ipairs(t) do
+            ux1 = math.min(ux1, w.at.x); uy1 = math.min(uy1, w.at.y)
+            ux2 = math.max(ux2, w.at.x + w.size.x); uy2 = math.max(uy2, w.at.y + w.size.y)
+        end
+        local uw, uh = ux2 - ux1, uy2 - uy1
+        -- 1) kök: bir pencere tüm genişliği kaplıyor ama alan geniş → kök üst-alt, yanlış
+        for _, w in ipairs(t) do
+            if near(w.at.x, ux1) and near(w.size.x, uw) and w.size.y < uh - T and uw > uh then return w end
+            if near(w.at.y, uy1) and near(w.size.y, uh) and w.size.x < uw - T and uh > uw then return w end
+        end
+        -- 2) kardeş ikililer: birebir hizalı komşu iki pencerenin ortak kutusu ters yönde bölünmüş
+        for i = 1, #t do
+            for j = i + 1, #t do
+                local a, b = t[i], t[j]
+                if near(a.at.y, b.at.y) and near(a.size.y, b.size.y) then          -- yan yana
+                    local l, r = a, b
+                    if b.at.x < a.at.x then l, r = b, a end
+                    local gap = r.at.x - (l.at.x + l.size.x)
+                    if gap >= 0 and gap < ADJ and a.size.y > (r.at.x + r.size.x - l.at.x) then return a end
+                elseif near(a.at.x, b.at.x) and near(a.size.x, b.size.x) then      -- üst üste
+                    local u, d = a, b
+                    if b.at.y < a.at.y then u, d = b, a end
+                    local gap = d.at.y - (u.at.y + u.size.y)
+                    if gap >= 0 and gap < ADJ and a.size.x > (d.at.y + d.size.y - u.at.y) then return a end
+                end
+            end
+        end
+        return nil
+    end
+
+    local function fix_step(wsid, back, n, moved)
+        local function done()
+            busy = false
+            -- odağı yalnız biz değiştirdiysek geri ver (gereksiz imleç zıplaması olmasın)
+            if moved and back then
+                pcall(function()
+                    if back.mapped and not back.floating and back.workspace and back.workspace.id == wsid then
+                        hl.dispatch(hl.dsp.focus({ window = back }))
+                    end
+                end)
+            end
+        end
+        -- hata olursa busy takılı kalmasın: tüm adım pcall içinde
+        local ok, err = pcall(function()
+            local ws = hl.get_active_workspace()
+            if n > 6 or ws == nil or ws.id ~= wsid or ws.tiled_layout ~= "dwindle" or ws.has_fullscreen then return done() end
+            local t = tiled_on(ws)
+            if #t < 2 then return done() end
+            local w = find_wrong(t)
+            if w == nil then return done() end
+            hl.dispatch(hl.dsp.focus({ window = w }))
+            hl.dispatch(hl.dsp.layout("togglesplit"))
+            hl.timer(function() fix_step(wsid, back, n + 1, true) end, { timeout = 60, type = "oneshot" })
+        end)
+        if not ok then busy = false end
+    end
+
+    local function fix_schedule()
+        if busy then return end
+        hl.timer(function()
+            if busy then return end
+            local ws = hl.get_active_workspace()
+            if ws == nil then return end
+            busy = true
+            fix_step(ws.id, hl.get_active_window(), 1, false)
+        end, { timeout = 80, type = "oneshot" })
+    end
+    _G.fix_splits = fix_schedule   -- elle: hyprctl eval 'fix_splits()'
+    hl.on("window.close", fix_schedule)
+    hl.on("window.move_to_workspace", fix_schedule)
+    hl.on("window.update_state", function(_, ch) if ch and ch.float ~= nil then fix_schedule() end end)
+end
+
 ------------------ BLUR MODU ("no" | "hybrid" | "full") ---------------------
 -- "hybrid": Blur, aktif workspace'te en az bir kitty penceresi varsa açılır; yoksa kapalı →
 -- kitty olmayan workspace'lerde (ör. Chrome) blur maliyeti sıfır. Kitty dışı pencereler
