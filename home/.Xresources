@@ -1,0 +1,2 @@
+! XWayland / X11 global DPI (96 * 1.333333 = 128)
+Xft.dpi: 128

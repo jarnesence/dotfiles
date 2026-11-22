@@ -4,7 +4,7 @@ bluetuith-bin
 eww
 google-chrome
 ttf-google-sans
-claude-desktop-bin
+claude-desktop
 owly
 sac-core
 sac-gui

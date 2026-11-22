@@ -264,7 +264,7 @@ make -C ~/.config/hypr/plugins/hypr-showdesktop
 |---|---|
 | `Super+T` / `Super+Return` | kitty |
 | `Super+A` | Chrome · `Super+E` Nautilus |
-| `Super+Space` | uygulama başlatıcı (fzf TUI) |
+| `Super+Space` | uygulama başlatıcı (fzf TUI; kategoriler akordeon, harf yazınca tüm uygulamalarda arama) |
 | `Super+,` | **Ayarlar TUI** (Wi-Fi, Bluetooth, DND, güç profili, ağ & DNS, ses, ekran, görünüm, giriş, güç, bildirim, sistem, yazılım, güvenlik, Hyprland) |
 | `Super+B` | blur modunu değiştir (`no` → `hybrid` → `full`, OSD gösterir) |
 | `Super+Shift+B` | blur seviyesini değiştir (`0` → `Az` → `Orta` → `Çok`, OSD gösterir) |

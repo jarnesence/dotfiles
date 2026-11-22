@@ -16,6 +16,15 @@ local browser     = "google-chrome-stable"
 hl.env("XCURSOR_THEME", "Bibata-Modern-Ice")
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+-- Native Wayland & HiDPI ölçekleme (XWayland'e düşen app sayısını en aza indirir)
+hl.env("GDK_BACKEND", "wayland,x11,*")
+hl.env("QT_QPA_PLATFORM", "wayland;xcb")
+hl.env("QT_AUTO_SCREEN_SCALE_FACTOR", "1")
+hl.env("QT_ENABLE_HIGHDPI_SCALING", "1")
+hl.env("QT_SCALE_FACTOR_ROUNDING_POLICY", "PassThrough")
+hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
+hl.env("SDL_VIDEODRIVER", "wayland,x11")
+hl.env("CLUTTER_BACKEND", "wayland")
 
 ------------------ AUTOSTART -----------------
 -- Doc-canonical autostart: ayrı orkestrasyon scriptine GEREK YOK. Resmi örnek
@@ -28,6 +37,8 @@ hl.on("hyprland.start", function()
     -- WAYLAND_DISPLAY'i görsün; uwsm'siz tty başlatmada kanonik gereklilik).
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE")
     hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE")
+    -- XWayland uygulamalarına monitör ölçeğine (1.333333 → 128 DPI) uygun Xft.dpi ver
+    hl.exec_cmd("xrdb -merge @HOME@/.Xresources")
     -- awww-daemon'ı EN BAŞTA ısıt: polkit/mako ile paralel ayağa kalksın, böylece
     -- wallpaper.sh çalıştığında daemon zaten hazır olur (bekleme döngüsüne takılmaz).
     hl.exec_cmd("awww-daemon")
@@ -252,6 +263,23 @@ hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_
 -- Tüm TUI'ler ("tui-" class önekli): float + sabit 900x540 + ortalı. Yeni TUI eklemek için sadece
 -- `kitty --class tui-<isim> -e <komut>` ile aç; otomatik bu kurala uyar.
 hl.window_rule({ name = "float-tui", match = { class = "tui-.*" }, float = true, size = "900 540", center = true })
+-- XWayland floating pencereler (kurulum/splash ekranları, kendi gradyan gölgesini çizen
+-- çerçevesiz diyaloglar vb.) saydam gölge payı bıraktığı için Hyprland çerçevesini geniş
+-- çiziyordu; bu pencerelerde Hyprland border/shadow/rounding kapatılır.
+hl.window_rule({
+    name        = "xwayland-float-no-frame",
+    match       = { xwayland = true, float = true },
+    border_size = 0,
+    no_shadow   = true,
+    no_blur     = true,
+    rounding    = 0,
+})
+-- XWayland boş popup/sürükleme pencerelerinin odak çalmasını önle
+hl.window_rule({
+    name     = "fix-xwayland-drags",
+    match    = { class = "^$", title = "^$", xwayland = true, float = true, fullscreen = false, pin = false },
+    no_focus = true,
+})
 
 ------------------ LAYER RULES ---------------
 -- eww blur'u KAPATILDI (2026-06-07, performans): OSD/saat artık buzlu cam değil, düz yarı saydam.

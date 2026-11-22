@@ -47,6 +47,7 @@ swappy
 wl-clipboard
 zenity
 xorg-xrandr
+xorg-xrdb
 python-dbus
 gnome-keyring
 adw-gtk-theme
