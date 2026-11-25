@@ -18,7 +18,7 @@ Hedef makine farklı olabilir; aşağıdaki **tespit tablosu** neyin nereye uyar
   aşağıda **[SOR]** ile işaretli noktalarda sor.
 - Hiçbir kullanıcı dosyasını doğrudan `rm` etme. Var olan bir dosyanın üzerine
   yazmadan önce `<dosya>.pre-dotfiles` olarak yedekle (ya da `trash-put`).
-- `/etc` altındaki pacman'e ait dosyaların (dnscrypt-proxy.toml, mkinitcpio.conf)
+- `/etc` altındaki pacman'e ait dosyaların (mkinitcpio.conf)
   **tamamını körlemesine kopyalama**; farkı göster, yalnız ilgili ayarları birleştir.
 - Bootloader'a, bölümlemeye, fstab'a, kernel komut satırına **sormadan dokunma**.
 - Her fazdan sonra kısa ilerleme notu ver; sonunda §9'daki doğrulamayı koş ve
@@ -91,7 +91,7 @@ Türetilecek değişkenler:
    sonra `paru -S --needed - < <(grep -v '^#' packages/aur.txt)`.
 5. Flathub: `flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo`
    ve `packages/flatpak.txt` içindekileri `flatpak install -y flathub …`.
-6. **[SOR]** "Geliştirici araçları da kurulsun mu? (`packages/dev.txt`: go, zig, jdk, dotnet, podman, tectonic…)"
+6. **[SOR]** "Geliştirici araçları da kurulsun mu? (`packages/dev.txt`: go, zig, jdk, dotnet, tectonic…)"
    Evet ise kur. Hayır ise atla.
 7. Claude Code CLI yoksa resmi yükleyiciyle kur (`curl -fsSL https://claude.ai/install.sh | bash`).
 
@@ -155,12 +155,9 @@ Açılışta `wallpaper.sh --restore` bu duvar kağıdını geri yükler; `Super
 |---|---|
 | `etc/sysctl.d/99-net.conf` (bbr + cake) | her zaman |
 | `etc/systemd/system.conf.d/no-watchdog.conf` | her zaman |
-| `etc/systemd/resolved.conf.d/00-local.conf` | her zaman (DNS zinciri, §6) |
-| `etc/NetworkManager/conf.d/dns.conf` | her zaman (DNS zinciri) |
-| `etc/dnscrypt-proxy/dnscrypt-proxy.toml` | pacman sürümüyle **birleştir**: `server_names`, `listen_addresses = ['127.0.0.1:53']`, `ipv6_servers=false`, `doh_servers=true`, `require_nolog=true`, `require_nofilter=false`, `lb_strategy='p2'`, `lb_estimator=true`, cache ayarları |
+| `etc/NetworkManager/conf.d/dns.conf` | her zaman (NM → systemd-resolved, §6) |
 | `etc/vconsole.conf`, `etc/X11/xorg.conf.d/00-keyboard.conf` | her zaman (Türkçe Q klavye) |
 | `etc/locale.conf` (`LANG=en_US.UTF-8`) | her zaman; `/etc/locale.gen`'de `en_US.UTF-8` ve `tr_TR.UTF-8` açık olsun → `locale-gen` |
-| `etc/modprobe.d/gereksiz.conf` | her zaman (pcspkr, mac_hid, serio_raw, **kvm**). CPU=intel ise `kvm_amd` satırlarını `kvm_intel` yap. **[SOR]** kullanıcı sanal makine çalıştıracaksa kvm satırlarını çıkar |
 | `etc/modprobe.d/no-watchdog.conf` (`sp5100_tco`) | yalnız CPU=amd |
 | `etc/sysctl.d/99-powersave.conf` | yalnız LAPTOP |
 | `etc/udev/rules.d/99-pci-runtime-pm.rules` | yalnız LAPTOP |
@@ -189,25 +186,21 @@ Boyutu RAM'e göre seç. Snapper kullanılıyorsa `@swap` anlık görüntüye gi
 
 ---
 
-## 6. Servisler ve DNS zinciri
+## 6. Servisler ve DNS
 
 ```sh
-sudo systemctl enable --now NetworkManager systemd-resolved dnscrypt-proxy \
+sudo systemctl enable --now NetworkManager systemd-resolved \
      power-profiles-daemon ananicy-cpp systemd-timesyncd
 # BT varsa:            bluetooth
 # koşullu kurulanlar:  battery-charge-limit ppd-default-profile ppd-boost-sync wifi-band-prefer
 sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 ```
 
-DNS zinciri: uygulama → `/etc/resolv.conf` (**symlink**) → systemd-resolved →
-`DNS=127.0.0.1` (+ düz 1.1.1.1 / 9.9.9.9 yedek), `Domains=~.` → dnscrypt-proxy (AdGuard DoH + Quad9 + Cloudflare).
-- `Domains=~.` şart: yoksa Wi-Fi'nin modem DNS'i de varsayılan rota olur, sorgular operatöre sızar ve DNS engelleri geri gelir.
+DNS: uygulama → `/etc/resolv.conf` (**symlink**) → systemd-resolved → modemin (DHCP) DNS'i.
+- Şifreli DNS / DoH / reklam engelleyen DNS (dnscrypt-proxy, AdGuard vb.) **kurma**: kaynakta
+  interneti ve YouTube'u bozduğu için kaldırıldı.
 - `resolv.conf` **düz dosya olmayacak**, symlink kalacak.
-- resolved katmanında **DoT/DNSSEC açma** (dnscrypt zaten şifreli; açmak zinciri kırar).
-- NM bağlantı-başı DNS'e yazma.
-- Doğrula: `resolvectl query archlinux.org` ve `journalctl -u dnscrypt-proxy -n 20`.
-  DNS kırılırsa internetsiz kalınır: dnscrypt çalışmıyorsa `resolved.conf.d/00-local.conf`'u
-  geçici olarak kaldırıp kullanıcıya bildir.
+- Doğrula: `resolvectl query archlinux.org`.
 
 ---
 
@@ -275,10 +268,9 @@ make -C ~/.config/hypr/plugins/hypr-showdesktop
 | `Super+T` / `Super+Return` | kitty |
 | `Super+A` | Chrome · `Super+E` Nautilus |
 | `Super+Space` | uygulama başlatıcı (fzf TUI; kategoriler akordeon, harf yazınca tüm uygulamalarda arama) |
-| `Super+,` | **Ayarlar TUI** (Wi-Fi, Bluetooth, DND, güç profili, ağ & DNS, ses, ekran, görünüm, giriş, güç, bildirim, sistem, yazılım, güvenlik, Hyprland) |
+| `Super+,` | **Ayarlar TUI** (Wi-Fi, Bluetooth, DND, güç profili, ağ, ses, ekran, görünüm, giriş, güç, bildirim, sistem, yazılım, güvenlik, Hyprland) |
 | `Super+B` | blur modunu değiştir (`no` → `hybrid` → `full`, OSD gösterir) |
 | `Super+Shift+B` | blur seviyesini değiştir (`0` → `Az` → `Orta` → `Çok`, OSD gösterir) |
-| `Super+N` | Spotify (resmi uygulama, Flathub) |
 | `Super+.` / `Super+Shift+.` | sonraki/önceki duvar kağıdı (palet de yenilenir) |
 | `Super+Shift+Q` | güç menüsü TUI |
 | `Super+Q` / `Super+C` | pencere kapat · `Super+W` float · `Super+F` tam ekran · `Super+J` split |

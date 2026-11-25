@@ -59,7 +59,6 @@ overview() {
     kv "Firewall (nftables)" "$(firewall_state)"
     kv "Open to the network" "$(sudo ss -lntH 2>/dev/null | awk '$4 !~ /^127\.|^\[::1\]/ {n++} END{print n+0" sockets"}')"
     kv "SSH server"          "$(svc_state sshd)"
-    kv "Encrypted DNS"       "$(systemctl is-active --quiet dnscrypt-proxy && echo 'dnscrypt-proxy' || echo 'no')"
     kv "Screen lock"         "$(command -v hyprlock >/dev/null && echo hyprlock || echo 'none installed — screen off only')"
     kv "sudo"                "$(sudo -n true 2>/dev/null && echo 'passwordless (NOPASSWD)' || echo 'password required')"
     kv "Automatic login"     "$(grep -rqs '^ExecStart.*autologin' /etc/systemd/system/getty@*.service.d 2>/dev/null && echo yes || echo no)"
@@ -78,7 +77,6 @@ while true; do
         "$(sep)" \
         "$(item keys  "󰌆" "SSH keys"          "$(ls "$HOME"/.ssh/*.pub 2>/dev/null | wc -l) keys")" \
         "$(item gpg   "󰢬" "GPG keys"          "$(gpg --list-secret-keys --with-colons 2>/dev/null | grep -c '^sec') secret")" \
-        "$(item dns   "󰦝" "Encrypted DNS"     "$(systemctl is-active dnscrypt-proxy)")" \
         "$(sep)" \
         "$(item lock  "󰷛" "Lock the screen now" "")" \
         "$(r back "󰌍  Back")")
@@ -89,7 +87,6 @@ while true; do
         listen) listening ;;
         keys)   ssh_keys ;;
         gpg)    show "GPG keys" gpg --list-keys ;;
-        dns)    "$SCRIPTS/dns.sh" ;;
         lock)   hyprctl dispatch dpms off >/dev/null 2>&1; break ;;
         -)      ;;
         back|'') break ;;

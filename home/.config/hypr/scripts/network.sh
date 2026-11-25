@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # ╭──────────────────────────────────────────────────────────────────────╮
 # │  Network  —  Wi-Fi, IP and DNS, over nmcli.                           │
-# │  Encrypted DNS lives in dns.sh.                                       │
 # ╰──────────────────────────────────────────────────────────────────────╯
 set -u
 source @HOME@/.config/hypr/scripts/settings-lib.sh
@@ -311,7 +310,6 @@ while true; do
         "$(item saved  "󰋙" "Saved networks"        "$(saved_profiles | wc -l) saved")"
         "$(item hidden "󰘓" "Hidden network"        "connect by name")"
         "$(sep)"
-        "$(item dns    "󰦝" "DNS & encrypted DNS"   "dnscrypt, presets, tests")"
         "$(item ipcfg  "󰩠" "IP configuration"      "DHCP or static")"
         "$(item info   "󰋼" "Connection details"    "")"
         "$(sep)"
@@ -328,7 +326,6 @@ while true; do
         scan)   wifi_list ;;
         saved)  saved_menu ;;
         hidden) hidden_network ;;
-        dns)    "$SCRIPTS/dns.sh" ;;
         ipcfg)  pick_connection ;;
         info)   details ;;
         radio)  [ "$radio" = enabled ] && nmcli radio wifi off || nmcli radio wifi on ;;

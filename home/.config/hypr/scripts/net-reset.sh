@@ -47,9 +47,6 @@ reset_now() {
     printf '[main]\ndns=systemd-resolved\nrc-manager=unmanaged\n' \
         | sudo tee /etc/NetworkManager/conf.d/dns.conf >/dev/null; done_
 
-    step "encrypted DNS up"
-    sudo systemctl start dnscrypt-proxy >/dev/null 2>&1; done_
-
     step "resolver restart"
     sudo systemctl restart systemd-resolved >/dev/null 2>&1; sleep 1; done_
 
@@ -103,7 +100,7 @@ case "${1-}" in
         say "· every VPN / WireGuard tunnel down, autoconnect disabled"
         say "· Wi-Fi and Bluetooth radios unblocked"
         say "· /etc/resolv.conf symlink and NetworkManager DNS restored"
-        say "· systemd-resolved, dnscrypt-proxy and NetworkManager restarted"
+        say "· systemd-resolved and NetworkManager restarted"
         say "· Wi-Fi reconnected"
         printf '\n'
         dim "Saved Wi-Fi networks and their passwords are NOT touched."

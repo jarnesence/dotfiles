@@ -32,7 +32,7 @@ Detailed steps, conditional system settings, and exclusions: [INSTALL.md](INSTAL
 
 ```
 home/        $HOME mirror (tokenized with @HOME@/@USER@) — hypr, kitty, eww, matugen, zsh, TUIs…
-system/      / mirror — DNS chain (resolved → dnscrypt), power/battery services, sysctl, swapfile…
+system/      / mirror — network (NM → resolved), power/battery services, sysctl, swapfile…
 packages/    base · apps · aur · flatpak · dev (optional)
 wallpaper/   active wallpaper
 INSTALL.md   AI agent installation specification
@@ -41,7 +41,7 @@ INSTALL.md   AI agent installation specification
 ## Keybinds (Summary)
 
 `Super+T` terminal · `Super+Space` launcher · `Super+,` settings · `Super+B` tray ·
-`Super+N` Spotify · `Super+.` wallpaper · `Super+Shift+Q` power menu · `Super+S` screenshot.
+`Super+.` wallpaper · `Super+Shift+Q` power menu · `Super+S` screenshot.
 Full list in `INSTALL.md` §8.
 
 MIT.

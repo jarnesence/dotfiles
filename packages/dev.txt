@@ -11,8 +11,6 @@ kotlin
 jdk17-openjdk
 jdk21-openjdk
 dotnet-sdk
-podman
-podman-docker
 pandoc-cli
 perl-image-exiftool
 python-matplotlib

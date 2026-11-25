@@ -2,7 +2,6 @@
 nautilus
 papers
 zed
-discord
 gpu-screen-recorder
 python-qrcode
 ccid
