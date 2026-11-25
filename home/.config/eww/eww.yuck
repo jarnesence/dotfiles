@@ -28,6 +28,9 @@
   (box :class "clockbox" :orientation "v" :space-evenly false :spacing 16
        :halign "end" :valign "end"
     (box :class "batbox" :orientation "v" :space-evenly false :spacing 8 :halign "end"
+      ;; Tepsi (SNI): tray-hostd watcher'ı tutar, eww host olur. Sol tık = etkinleştir, sağ tık = menü.
+      ;; Batarya grubunun başında, yazılarla aynı eksende; boyut batarya simgesiyle aynı (24px).
+      (systray :class "tray" :orientation "v" :icon-size 24 :spacing 8 :prepend-new false :halign "center")
       (label :class "bat-text" :angle 90 :text "${BAT}%")
       (label :class "bat-icon" :angle 90 :text BATIC)
       (label :class "cpu-text" :angle 90 :text "${CPUTEMP}°")
@@ -47,7 +50,7 @@
 (defwindow clock
   :monitor 0
   :geometry (geometry :x "0px" :y "28px"
-                      :width "110px" :height "760px"
+                      :width "110px" :height "1000px"
                       :anchor "bottom right")
   :stacking "bg"
   :exclusive false

@@ -8,7 +8,7 @@
 
 A minimal desktop on **Arch Linux + Hyprland** (Lua config via `hl.*` API) where every interactive surface is an `fzf` TUI. Colors are dynamically generated from the active wallpaper using `matugen` (Hyprland borders, `kitty`, `eww`, GTK3/4, and `mako` all share the exact same palette).
 
-![wallpaper](wallpaper/z4.png)
+![wallpaper](wallpaper/z4-3.png)
 
 ## Installation — Don't Install It Yourself, Let an Agent Build It
 

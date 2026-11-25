@@ -74,9 +74,9 @@ end
 -- "no"     : blur kapalı, tüm pencereler tam opak (1.0)
 -- "hybrid" : sadece kitty'nin olduğu workspace'te ve sadece kitty'ye blur; diğer uygulamalar tam opak (1.0)
 -- "full"   : tüm pencerelerde blur + terminal şeffaflığı (0.86)
-local BLUR_MODE = "hybrid"
+local BLUR_MODE = "full"
 -- "0" | "az" | "orta" | "cok"
-local BLUR_LEVEL = "0"
+local BLUR_LEVEL = "orta"
 local BLUR_LEVELS = {
     ["0"]    = { size = 0, passes = 0 },
     ["az"]   = { size = 2, passes = 1 },
@@ -254,17 +254,23 @@ hl.bind(mod .. " + quotedbl", function()
             border_size = hl.get_config("general.border_size"),
             rounding    = hl.get_config("decoration.rounding"),
             shadow      = hl.get_config("decoration.shadow.enabled"),
+            xray        = hl.get_config("decoration.blur.xray"),
+            new_opt     = hl.get_config("decoration.blur.new_optimizations"),
         }
         hl.config({
             general    = { gaps_in = 0, gaps_out = 0, border_size = 0 },
-            decoration = { rounding = 0, shadow = { enabled = false } },
+            -- xray: blur pencere başına değil tek parça hesaplanır → bitişik pencerelerin
+            -- ve ekran kenarının dibindeki koyu "gölge" şeridi oluşmaz.
+            decoration = { rounding = 0, shadow = { enabled = false },
+                           blur = { xray = true, new_optimizations = true } },
         })
     else
         local s = ZEN_SAVED
         ZEN_SAVED = nil
         hl.config({
             general    = { gaps_in = s.gaps_in, gaps_out = s.gaps_out, border_size = s.border_size },
-            decoration = { rounding = s.rounding, shadow = { enabled = s.shadow } },
+            decoration = { rounding = s.rounding, shadow = { enabled = s.shadow },
+                           blur = { xray = s.xray, new_optimizations = s.new_opt } },
         })
     end
 end)

@@ -125,10 +125,10 @@ grep -rlI '@HOME@\|@USER@' "$HOME"/.config "$HOME"/.local/bin "$HOME"/.z* "$HOME
 
 ```sh
 mkdir -p ~/Pictures/Wallpapers ~/Pictures/Screenshots
-cp wallpaper/z4.png ~/Pictures/Wallpapers/
-printf '%s' "$HOME/Pictures/Wallpapers/z4.png" > ~/.cache/active-wallpaper-src
-cp wallpaper/z4.png ~/.cache/active-wallpaper.png
-matugen image ~/Pictures/Wallpapers/z4.png --mode dark --prefer saturation   # renk dosyalarını üretir
+cp wallpaper/z4-3.png ~/Pictures/Wallpapers/
+printf '%s' "$HOME/Pictures/Wallpapers/z4-3.png" > ~/.cache/active-wallpaper-src
+cp wallpaper/z4-3.png ~/.cache/active-wallpaper.png
+matugen image ~/Pictures/Wallpapers/z4-3.png --mode dark --prefer saturation   # renk dosyalarını üretir
 
 gsettings set org.gnome.desktop.interface gtk-theme    'adw-gtk3-dark'
 gsettings set org.gnome.desktop.interface icon-theme   'Papirus-Dark'

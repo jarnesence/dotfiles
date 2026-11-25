@@ -38,6 +38,17 @@
   margin-right: 14px; // 90° CCW düzende baseline kaldırması sağa döndü
 }
 
+.tray {
+  menu {
+    background-color: rgba($kitty_bg, 0.92);
+    border-radius: 10px;
+    padding: 6px;
+    color: $on_surface;
+    menuitem { padding: 4px 10px; border-radius: 6px; }
+    menuitem:hover { background-color: rgba($primary, 0.25); }
+  }
+}
+
 .bat-icon {
   font-size: 24px;
   color: $primary;
